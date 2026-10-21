@@ -6,6 +6,7 @@ import { Backup, Import, SetPassword, Verify, Welcome } from './screens/Onboardi
 import { Send } from './screens/Send';
 import { ChangePw, Receive, Reveal } from './screens/Account';
 import { Unlock } from './screens/Unlock';
+import { screen as trackScreen } from './lib/analytics';
 
 const ONBOARDING = new Set<Route['name']>(['welcome', 'backup', 'verify', 'password', 'import']);
 
@@ -29,6 +30,10 @@ function Router() {
   }, []);
 
   useEffect(() => { window.scrollTo(0, 0); }, [current]);
+
+  // Anonymous screen views for the usage funnel (no addresses or amounts).
+  const screenName = current.name === 'home' ? `home-${current.tab}` : current.name;
+  useEffect(() => { trackScreen(screenName); }, [screenName]);
 
   const push = useCallback((r: Route) => {
     window.history.pushState({ holdr: true }, '');

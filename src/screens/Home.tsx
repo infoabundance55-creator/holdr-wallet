@@ -5,6 +5,7 @@ import { formatAmount, shortAddr } from '../lib/format';
 import { useBalance } from '../lib/hooks';
 import { clearLocalData, loadTxs, saveTxs, type SentTx } from '../lib/store';
 import { clearVault } from '../lib/vault';
+import { goal } from '../lib/analytics';
 import { useNav, type Tab } from '../nav';
 import { useApp } from '../state';
 
@@ -31,7 +32,11 @@ export function Home({ tab }: { tab: Tab }) {
 
 function NetworkSheet({ onClose }: { onClose: () => void }) {
   const { t, prefs, setPrefs } = useApp();
-  const pick = (id: NetworkId) => { setPrefs({ network: id }); onClose(); };
+  const pick = (id: NetworkId) => {
+    if (id === 'mainnet' && prefs.network !== 'mainnet') goal('switch-mainnet');
+    setPrefs({ network: id });
+    onClose();
+  };
   return (
     <Sheet title={t('networkLabel')} onClose={onClose} closeLabel={t('close')}>
       <div role="radiogroup" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -53,6 +58,10 @@ function Assets({ onHistory }: { onHistory: () => void }) {
   const hide = prefs.hideAmounts;
   const bal = balance == null ? '—' : formatAmount(balance, 18, 6);
   const isTest = network.id === 'testnet';
+
+  useEffect(() => {
+    if (balance != null && balance > 0n) goal('funded', { once: true });
+  }, [balance]);
 
   return (
     <>

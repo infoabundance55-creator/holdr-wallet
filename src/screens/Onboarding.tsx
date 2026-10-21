@@ -4,6 +4,7 @@ import { Header, Icon, Mark, Note, PasswordInput, Progress, Steps } from '../com
 import { useNav } from '../nav';
 import { useApp } from '../state';
 import { newWallet, parseImport, passwordChecks, phraseOf, saveVault, type Signer } from '../lib/vault';
+import { goal } from '../lib/analytics';
 
 export function Welcome() {
   const { t, prefs, setPrefs } = useApp();
@@ -156,6 +157,7 @@ export function SetPassword({ wallet, flow }: { wallet: Signer; flow: 'create' |
     setProgress(0);
     try {
       await saveVault(wallet, pw, { backedUp: true }, (p) => setProgress(p));
+      goal(flow === 'create' ? 'wallet-created' : 'wallet-imported');
       refreshVault();
       setSigner(wallet);
       nav.reset({ name: 'home', tab: 'assets' });

@@ -3,6 +3,7 @@ import { Header, Icon, Note } from '../components/ui';
 import { checkAddress, formatAmount, parseAmount, shortAddr } from '../lib/format';
 import { useBalance } from '../lib/hooks';
 import { loadTxs, saveTxs } from '../lib/store';
+import { goal } from '../lib/analytics';
 import { useNav } from '../nav';
 import { useApp } from '../state';
 
@@ -72,6 +73,8 @@ export function Send() {
       const list = loadTxs();
       list.unshift({ hash: tx.hash, from: me, to: addr.address, value: value.toString(), chainId: network.chainId, time: Date.now(), status: 'pending' });
       saveTxs(list);
+      goal('send');
+      goal('first-send', { once: true });
       setHash(tx.hash);
       setStep('done');
       tx.wait().then((r) => {

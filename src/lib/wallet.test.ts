@@ -4,6 +4,17 @@ import {
   passwordChecks, phraseOf, saveVault, unlockVault, VAULT_KEY, type KV,
 } from './vault';
 import { checkAddress, formatAmount, parseAmount, shortAddr } from './format';
+import { scrubUrl } from './analytics';
+
+describe('analytics privacy', () => {
+  it('keeps only fixed virtual paths and never addresses', () => {
+    expect(scrubUrl('https://holdr.app/app/send')).toBe('https://holdr.app/app/send');
+    expect(scrubUrl('https://holdr.app/goal/first-send?x=1#y')).toBe('https://holdr.app/goal/first-send');
+    expect(scrubUrl('https://holdr.app/')).toBeNull();
+    expect(scrubUrl('https://holdr.app/app/0x9858EfFD232B4033E47d90003D41EC34EcaEda94')).toBeNull();
+    expect(scrubUrl('not a url')).toBeNull();
+  });
+});
 
 function memKV(): KV & { data: Map<string, string> } {
   const data = new Map<string, string>();

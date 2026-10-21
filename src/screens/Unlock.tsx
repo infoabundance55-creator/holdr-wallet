@@ -3,6 +3,7 @@ import { Mark, PasswordInput, Progress, Sheet } from '../components/ui';
 import { shortAddr } from '../lib/format';
 import { clearLocalData } from '../lib/store';
 import { clearVault, unlockVault } from '../lib/vault';
+import { goal } from '../lib/analytics';
 import { useNav } from '../nav';
 import { useApp } from '../state';
 
@@ -23,6 +24,7 @@ export function Unlock() {
     try {
       const s = await unlockVault(pw, (p) => setProgress(p));
       setPw('');
+      goal('unlocked');
       setSigner(s);
       nav.reset({ name: 'home', tab: 'assets' });
     } catch {
