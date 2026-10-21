@@ -1,0 +1,4 @@
+Contact: https://github.com/infoabundance55-creator/holdr-wallet/security/advisories/new
+Policy: https://github.com/infoabundance55-creator/holdr-wallet/blob/main/SECURITY.md
+Expires: 2027-10-21T00:00:00Z
+Preferred-Languages: en, zh

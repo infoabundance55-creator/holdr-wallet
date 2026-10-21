@@ -1,5 +1,11 @@
 # Holdr Wallet
 
+[![CI](https://github.com/infoabundance55-creator/holdr-wallet/actions/workflows/ci.yml/badge.svg)](https://github.com/infoabundance55-creator/holdr-wallet/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/infoabundance55-creator/holdr-wallet/actions/workflows/codeql.yml/badge.svg)](https://github.com/infoabundance55-creator/holdr-wallet/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/infoabundance55-creator/holdr-wallet/badge)](https://scorecard.dev/viewer/?uri=github.com/infoabundance55-creator/holdr-wallet)
+
+Live: https://holdr-wallet.vercel.app · Security: [SECURITY.md](SECURITY.md)
+
 A self-custody web wallet for Robinhood Chain: hold tokenized stocks and crypto in one place.
 Keys are generated and encrypted in the browser and never leave the device.
 
@@ -16,6 +22,13 @@ Keys are generated and encrypted in the browser and never leave the device.
 - Activity for transfers sent from this wallet
 - Settings: view phrase, change password, language (简体中文 / English), network, remove wallet
 - Works on phone and desktop browsers; can be added to the home screen
+
+## Security
+
+- Keys never leave the browser; stored only as an encrypted keystore. Details in [SECURITY.md](SECURITY.md).
+- Strict security headers (`vercel.json`): CSP limited to own scripts and Robinhood RPCs, no framing, HSTS.
+- Every change runs tests, CodeQL, a production dependency audit and OpenSSF Scorecard; Dependabot watches dependencies.
+- Not yet third-party audited.
 
 ## Next
 
