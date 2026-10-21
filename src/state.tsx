@@ -33,7 +33,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [vault, setVault] = useState<VaultRecord | null>(() => loadVault());
   const [signer, setSigner] = useState<Signer | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const toastTimer = useRef<number>();
+  const toastTimer = useRef<number | undefined>(undefined);
 
   const setPrefs = useCallback((p: Partial<Prefs>) => {
     setPrefsState((cur) => {
