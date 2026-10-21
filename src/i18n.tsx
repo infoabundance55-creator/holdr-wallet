@@ -46,6 +46,7 @@ const zh = {
   // assets
   totalAssets: '总资产', hideAmounts: '隐藏金额', showAmounts: '显示金额',
   receive: '收款', send: '转账', history: '记录',
+  gameTagline: '每日挑战已开放 · 踩着 K 线冲上月球', gamePlay: '开玩', gameOpen: '打开 Moon Jump 小游戏',
   all: '全部', stocks: '股票代币', crypto: '加密货币',
   navAssets: '资产', navActivity: '活动', navMe: '我的', mainNav: '主导航', quickActions: '快捷操作', assetTabs: '资产分类',
   stocksSoon: '股票代币和美元价格会在下一个版本接上。',
@@ -128,6 +129,7 @@ const en: Record<Key, string> = {
   forgotConfirm: 'Remove and re-import',
   totalAssets: 'Total balance', hideAmounts: 'Hide amounts', showAmounts: 'Show amounts',
   receive: 'Receive', send: 'Send', history: 'History',
+  gameTagline: 'Daily challenge is live. Jump the candles to the moon.', gamePlay: 'PLAY', gameOpen: 'Open the Moon Jump game',
   all: 'All', stocks: 'Stocks', crypto: 'Crypto',
   navAssets: 'Assets', navActivity: 'Activity', navMe: 'Me', mainNav: 'Main navigation', quickActions: 'Quick actions', assetTabs: 'Asset types',
   stocksSoon: 'Stock tokens and USD prices arrive in the next version.',

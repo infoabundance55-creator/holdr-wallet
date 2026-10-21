@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { NavContext, type Nav, type Route } from './nav';
 import { AppProvider, useApp } from './state';
 import { Home } from './screens/Home';
@@ -6,6 +6,8 @@ import { Backup, Import, SetPassword, Verify, Welcome } from './screens/Onboardi
 import { Send } from './screens/Send';
 import { ChangePw, Receive, Reveal } from './screens/Account';
 import { Unlock } from './screens/Unlock';
+// The game (canvas engine, sprites, fonts) loads only when opened.
+const Game = lazy(() => import('./screens/Game').then((m) => ({ default: m.Game })));
 import { screen as trackScreen } from './lib/analytics';
 
 const ONBOARDING = new Set<Route['name']>(['welcome', 'backup', 'verify', 'password', 'import']);
@@ -59,6 +61,7 @@ function Router() {
     case 'receive': screen = signer ? <Receive /> : null; break;
     case 'changePw': screen = <ChangePw />; break;
     case 'reveal': screen = <Reveal />; break;
+    case 'game': screen = signer ? <Suspense fallback={null}><Game /></Suspense> : null; break;
   }
 
   return (

@@ -15,7 +15,8 @@ export type Route =
   | { name: 'send' }
   | { name: 'receive' }
   | { name: 'changePw' }
-  | { name: 'reveal' };
+  | { name: 'reveal' }
+  | { name: 'game' };
 
 export interface Nav {
   push: (r: Route) => void;

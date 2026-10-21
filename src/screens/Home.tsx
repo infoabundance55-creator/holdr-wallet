@@ -8,6 +8,7 @@ import { clearVault } from '../lib/vault';
 import { goal } from '../lib/analytics';
 import { useNav, type Tab } from '../nav';
 import { useApp } from '../state';
+import bossImg from '../game/img/boss.png';
 
 export function Home({ tab }: { tab: Tab }) {
   const { t } = useApp();
@@ -27,6 +28,20 @@ export function Home({ tab }: { tab: Tab }) {
         ))}
       </nav>
     </div>
+  );
+}
+
+function GameBanner({ onOpen }: { onOpen: () => void }) {
+  const { t } = useApp();
+  return (
+    <button className="game-banner" onClick={onOpen} aria-label={t('gameOpen')}>
+      <img src={bossImg} alt="" className="game-banner-hero" />
+      <span className="game-banner-text">
+        <span className="game-banner-title">MOON JUMP</span>
+        <span className="game-banner-sub">{t('gameTagline')}</span>
+        <span className="game-banner-cta">{t('gamePlay')} ▶</span>
+      </span>
+    </button>
   );
 }
 
@@ -95,6 +110,8 @@ function Assets({ onHistory }: { onHistory: () => void }) {
         <button className="action main" onClick={() => nav.push({ name: 'send' })}><span className="dot"><Icon name="send" /></span>{t('send')}</button>
         <button className="action" onClick={onHistory}><span className="dot"><Icon name="clock" /></span>{t('history')}</button>
       </nav>
+
+      <GameBanner onOpen={() => nav.push({ name: 'game' })} />
 
       <div className="tabs" role="tablist" aria-label={t('assetTabs')}>
         {(['all', 'stocks', 'crypto'] as const).map((c) => (

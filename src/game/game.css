@@ -1,0 +1,95 @@
+/* Moon Jump — pixel arcade layer. Everything is scoped under .mj so it never touches wallet styles. */
+.mj {
+  --mj-ink: #14124A;
+  --mj-indigo: #2B2BD9;
+  --mj-lav: #ECEBFF;
+  --mj-lav2: #D6D4FF;
+  --mj-gold: #FFC94D;
+  --mj-gold-d: #D9A12E;
+  --mj-green: #2FBF71;
+  --mj-red-d: #B4320A;
+  --mj-mute: #5A5A80;
+  --mj-white: #FFFFFF;
+  --mj-night: #0E0C3A;
+  --mj-display: 'Press Start 2P', ui-monospace, monospace;
+  --mj-body: 'Pixelify Sans', ui-monospace, monospace;
+  position: fixed; inset: 0; z-index: 40; background: var(--mj-night); color: var(--mj-ink); font-family: var(--mj-body);
+  overflow: hidden; -webkit-font-smoothing: auto;
+}
+.mj *, .mj *::before, .mj *::after { box-sizing: border-box; }
+.mj [hidden] { display: none !important; }
+.mj-stage { position: relative; height: 100%; max-width: 480px; margin: 0 auto; overflow: hidden; background: var(--mj-lav); touch-action: none; user-select: none; -webkit-user-select: none; }
+.mj-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.mj-layer { position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(12px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.mj-scroll { overflow-y: auto; touch-action: pan-y; }
+.mj-dim { background: rgba(14, 12, 58, 0.62); }
+.mj-panel { background: var(--mj-white); border: 3px solid var(--mj-ink); box-shadow: 4px 4px 0 var(--mj-ink); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.mj-disp { font-family: var(--mj-display); letter-spacing: 0.02em; line-height: 1.4; }
+.mj-btn { font-family: var(--mj-display); font-size: 14px; height: 56px; border: 3px solid var(--mj-ink); background: var(--mj-gold); color: var(--mj-ink); box-shadow: inset -4px -4px 0 var(--mj-gold-d), 0 4px 0 var(--mj-ink); cursor: pointer; width: 100%; border-radius: 0; padding: 0 8px; }
+.mj-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: inset -4px -4px 0 var(--mj-gold-d), 0 1px 0 var(--mj-ink); opacity: 1; }
+.mj-btn:disabled { opacity: 0.55; }
+.mj-btn.alt { background: var(--mj-white); box-shadow: inset -4px -4px 0 var(--mj-lav2), 0 4px 0 var(--mj-ink); font-size: 11px; height: 48px; }
+.mj-btn.ghost { background: transparent; border: 0; box-shadow: none; color: var(--mj-indigo); font-size: 9px; height: 44px; width: auto; }
+.mj-btn.danger { color: var(--mj-red-d); }
+.mj button:focus-visible, .mj input:focus-visible { outline: 3px solid var(--mj-gold); outline-offset: 3px; }
+.mj-sq { width: 44px; height: 44px; border: 3px solid var(--mj-ink); background: var(--mj-white); box-shadow: 0 3px 0 var(--mj-ink); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; flex: none; border-radius: 0; color: var(--mj-ink); }
+.mj-chip { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; border: 3px solid var(--mj-ink); background: var(--mj-white); font-family: var(--mj-display); font-size: 10px; color: var(--mj-ink); white-space: nowrap; }
+button.mj-chip { cursor: pointer; border-radius: 0; }
+.mj-logo { font-family: var(--mj-display); font-size: 34px; line-height: 1.25; color: var(--mj-gold); text-align: center; text-shadow: 3px 0 0 var(--mj-ink), -3px 0 0 var(--mj-ink), 0 3px 0 var(--mj-ink), 0 -3px 0 var(--mj-ink), 4px 5px 0 var(--mj-ink); }
+.mj-muted { color: var(--mj-mute); }
+.mj-row { display: flex; align-items: center; gap: 10px; }
+.mj-between { justify-content: space-between; }
+.mj-bar { display: flex; gap: 2px; height: 12px; padding: 2px; border: 2px solid var(--mj-ink); background: var(--mj-ink); flex: 1; }
+.mj-bar i { flex: 1; height: 100%; background: var(--mj-lav2); }
+.mj-chars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.mj-char { height: 92px; border: 3px solid var(--mj-ink); background: var(--mj-white); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; padding: 6px 2px; cursor: pointer; font-family: var(--mj-display); font-size: 6px; color: var(--mj-ink); border-radius: 0; }
+.mj-char img { height: 56px; width: auto; max-width: 100%; object-fit: contain; }
+.mj-char[aria-pressed="true"] { background: var(--mj-gold); box-shadow: 3px 3px 0 var(--mj-ink); }
+.mj-toggle { display: flex; align-items: center; justify-content: space-between; min-height: 44px; font-size: 17px; font-weight: 600; background: none; border: 0; padding: 0; cursor: pointer; color: var(--mj-ink); font-family: var(--mj-body); width: 100%; }
+.mj-toggle .sw { width: 56px; height: 28px; border: 3px solid var(--mj-ink); background: var(--mj-lav2); padding: 2px; display: flex; justify-content: flex-start; }
+.mj-toggle .sw i { width: 18px; height: 100%; background: var(--mj-ink); }
+.mj-toggle[aria-checked="true"] .sw { background: var(--mj-green); justify-content: flex-end; }
+.mj-toggle[aria-checked="true"] .sw i { background: var(--mj-white); }
+.mj-hud { pointer-events: none; }
+.mj-hud button { pointer-events: auto; }
+.mj-hud-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; }
+.mj-hud-h { font-family: var(--mj-display); font-size: 18px; color: var(--mj-ink); text-shadow: 3px 3px 0 rgba(255,255,255,0.6); font-variant-numeric: tabular-nums; }
+.mj-night .mj-hud-h { color: var(--mj-white); text-shadow: 3px 3px 0 var(--mj-ink); }
+.mj-hud-sub { font-size: 14px; font-weight: 600; color: var(--mj-mute); margin-top: 6px; }
+.mj-night .mj-hud-sub { color: #C9C7F2; }
+.mj-phase { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.mj-phase .tag { flex: none; height: 24px; padding: 0 8px; border: 3px solid var(--mj-ink); font-family: var(--mj-display); font-size: 8px; display: inline-flex; align-items: center; }
+.mj-phase .next { flex: none; font-size: 13px; font-weight: 600; color: var(--mj-mute); }
+.mj-night .mj-phase .next { color: #C9C7F2; }
+.mj-banner { align-self: flex-start; margin-top: 10px; height: 30px; padding: 0 10px; border: 3px solid var(--mj-ink); font-family: var(--mj-display); font-size: 9px; display: inline-flex; align-items: center; box-shadow: 3px 3px 0 var(--mj-ink); }
+.mj-count { margin: auto; font-family: var(--mj-display); font-size: 120px; color: var(--mj-white); text-shadow: 6px 6px 0 var(--mj-ink); }
+.mj-big { font-family: var(--mj-display); font-size: 34px; color: var(--mj-gold); text-align: center; text-shadow: 3px 0 0 var(--mj-ink), -3px 0 0 var(--mj-ink), 0 3px 0 var(--mj-ink), 0 -3px 0 var(--mj-ink), 4px 5px 0 var(--mj-ink); font-variant-numeric: tabular-nums; }
+.mj-kv { display: flex; justify-content: space-between; font-size: 17px; font-variant-numeric: tabular-nums; }
+.mj-kv b { font-weight: 700; }
+.mj-rule { height: 3px; background: var(--mj-ink); flex: none; }
+.mj-dots { display: flex; justify-content: center; gap: 8px; }
+.mj-dots i { width: 12px; height: 12px; border: 2px solid var(--mj-ink); background: var(--mj-white); }
+.mj-dots i.on { background: var(--mj-indigo); }
+.mj-input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: var(--mj-display); font-size: 14px; color: var(--mj-ink); height: 100%; }
+.mj-field { display: flex; align-items: center; height: 56px; border: 3px solid var(--mj-ink); background: var(--mj-white); box-shadow: 4px 4px 0 var(--mj-ink); padding: 0 12px; gap: 8px; }
+.mj-pill { height: 36px; padding: 0 10px; border: 3px solid var(--mj-ink); background: var(--mj-white); color: var(--mj-ink); font-size: 15px; font-weight: 600; font-family: var(--mj-body); cursor: pointer; border-radius: 0; }
+.mj-list-row { display: grid; grid-template-columns: 34px 36px 1fr auto; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px; border-bottom: 2px solid var(--mj-lav2); font-size: 16px; font-weight: 600; }
+.mj-list-row img { width: 32px; height: 32px; object-fit: contain; }
+.mj-list-row.me { background: var(--mj-gold); }
+.mj-rank { font-family: var(--mj-display); font-size: 10px; }
+.mj-num { font-family: var(--mj-display); font-size: 10px; font-variant-numeric: tabular-nums; }
+.mj-town { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; background: #9ED37F; border: 3px solid var(--mj-ink); display: grid; grid-template-columns: repeat(3, 1fr); align-content: start; gap: 18px 8px; padding: 18px 8px; }
+.mj-house { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--mj-body); color: var(--mj-ink); }
+.mj-house canvas { width: 72px; height: auto; image-rendering: pixelated; }
+.mj-house .tag { max-width: 100%; height: 24px; padding: 0 6px; border: 3px solid var(--mj-ink); background: var(--mj-white); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mj-house.me .tag { background: var(--mj-indigo); color: var(--mj-white); }
+.mj-house[aria-pressed="true"] .tag { background: var(--mj-gold); color: var(--mj-ink); }
+.mj-house .sub { font-size: 12px; font-weight: 600; color: #1E5A2A; }
+.mj-tiers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.mj-tier { height: 56px; border: 3px solid var(--mj-ink); background: var(--mj-white); color: var(--mj-ink); font-family: var(--mj-display); font-size: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0; cursor: pointer; border-radius: 0; }
+.mj-tier canvas { width: 28px; height: auto; image-rendering: pixelated; }
+.mj-tier[aria-pressed="true"] { background: var(--mj-indigo); color: var(--mj-white); }
+.mj-toast { position: absolute; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--mj-ink); color: var(--mj-white); font-family: var(--mj-display); font-size: 9px; padding: 10px 12px; border: 3px solid var(--mj-white); white-space: nowrap; z-index: 5; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+.mj-err { color: var(--mj-red-d); font-size: 15px; font-weight: 600; min-height: 20px; }
+@media (max-height: 760px) { .mj-hero { display: none !important; } .mj-logo { font-size: 28px; } }
+@media (prefers-reduced-motion: reduce) { .mj-btn:active { transform: none; } }
