@@ -51,6 +51,13 @@ npm run build    # production build in dist/
 Any static host works. With Vercel: import the GitHub repo, framework preset **Vite**, no other settings needed.
 Optionally set `VITE_RPC_TESTNET` / `VITE_RPC_MAINNET` (see `.env.example`) to use a private RPC.
 
+## License
+
+Holdr Wallet is free software under the [GNU General Public License v3.0 or later](LICENSE).
+You may use, study, share and modify it; anything you distribute that is based on it must be released under the same license with its source code.
+
+The Holdr name and logo are not covered by this license.
+
 ## Networks
 
 | | Chain ID | Explorer |
