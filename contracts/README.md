@@ -5,7 +5,8 @@ Smart contracts for Holdr on Robinhood Chain. Built with [Foundry](https://getfo
 | Contract | Status | What it does |
 | --- | --- | --- |
 | `HoldrGenesis` | written, tested, not deployed | 5,000 free-mint characters in 5 waves, commit-reveal randomness, equip with a 7-day cooldown, 2.5% royalty |
-| Launchpad (factory, curve, migrator, hook, locker) | next | bonding-curve token launches that graduate to Uniswap v4 |
+| `LaunchpadFactory`, `HoldrToken`, `CurvePool` | written, tested, not deployed | token launches on a USDG bonding curve: 1% fee (70% creator / 30% platform), 5-second anti-snipe surcharge, graduation at 10,000 USDG |
+| Migrator, `HoldrLaunchHook`, `LiquidityLocker` | next (step 2) | move graduated liquidity into Uniswap v4 and lock it forever |
 
 The full design is in the contract design doc (Holdr project docs).
 
@@ -44,3 +45,14 @@ After deploying, the owner opens wave 1 with `openWave(startTime)`.
 - Smart-contract wallets mint for themselves: the permit's `to` must be the wallet that calls `mint`.
 - Equip: a manual change starts a 7-day cooldown. Sending away the equipped character unequips it; receiving one auto-equips it only when nothing is equipped and no cooldown is running. Transfers to yourself change nothing.
 - The owner can open the 5 waves (start at most a year ahead), move the latest wave before it starts, pause new mints, rotate the signer, change the metadata URL and set royalties up to 2.5%. It cannot renounce, mint, or change a revealed character.
+
+## Launchpad (step 1)
+
+- `LaunchpadFactory.createToken` clones a `HoldrToken` (1B supply, no owner, no tax) and a `CurvePool`, and copies the current rules into the pool. Later rule changes never affect launched tokens.
+- Curve: constant product with a virtual USDG reserve of G / 3 (G = graduation threshold), so the last curve price equals the Uniswap opening price G / 200M. At G = 10,000 USDG the opening market cap is $3,125 and the graduation market cap is $50,000.
+- Every trade rounds in the pool's favour and fees round up, so x * y never goes down and the pool can always pay out every holder at once (checked by invariant tests).
+- Anti-snipe: buys in seconds 0-4 after launch pay 98% / 24.75% / 6.19% / 1.55% / 0.39% on top of the 1% fee. The surcharge stays in the curve (it raises the price for all holders). The creator's first buy in the launch transaction is exempt and capped at 50M tokens.
+- Graduation happens inside the buy that reaches G: only the USDG needed is taken, unsold curve tokens are burned, and 200M tokens plus G USDG go to the migrator.
+- Owner (Safe): rule changes wait 48 hours; pausers can stop launches and buys at once (never sells or claims); the per-buy cap can only be raised or removed; renouncing is disabled.
+- Creators claim their fee share with `claimCreatorFees(to)`; anyone can push platform fees to the treasury with `withdrawProtocolFees()`.
+- USDG is upgradeable and its issuer can freeze or seize balances; the pools hold USDG, so that is an accepted external risk.
