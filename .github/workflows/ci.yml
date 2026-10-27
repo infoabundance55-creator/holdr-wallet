@@ -23,3 +23,17 @@ jobs:
       - run: npm run build
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+      - name: Install Foundry v1.5.1
+        run: curl -sSL https://github.com/foundry-rs/foundry/releases/download/v1.5.1/foundry_v1.5.1_linux_amd64.tar.gz | sudo tar xz -C /usr/local/bin forge
+      - name: Test contracts
+        working-directory: contracts
+        env:
+          FOUNDRY_PROFILE: ci
+        run: forge test
