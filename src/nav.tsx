@@ -1,28 +1,20 @@
-import type { HDNodeWallet } from 'ethers';
 import { createContext, useContext } from 'react';
-import type { Signer } from './lib/vault';
 
-export type Tab = 'assets' | 'launch' | 'activity' | 'me';
+export type Tab = 'discover' | 'create' | 'points' | 'me';
 
 export type Route =
-  | { name: 'welcome' }
-  | { name: 'backup'; wallet: HDNodeWallet }
-  | { name: 'verify'; wallet: HDNodeWallet }
-  | { name: 'password'; wallet: Signer; flow: 'create' | 'import' }
-  | { name: 'import' }
-  | { name: 'unlock' }
   | { name: 'home'; tab: Tab }
-  | { name: 'send' }
-  | { name: 'receive' }
-  | { name: 'changePw' }
-  | { name: 'reveal' }
-  | { name: 'token'; token: string };
+  | { name: 'token'; token: string }
+  | { name: 'legacy' };
 
 export interface Nav {
   push: (r: Route) => void;
   pop: () => void;
   reset: (r: Route) => void;
   replace: (r: Route) => void;
+  /** Go to a main tab (desktop header and mobile bottom bar). */
+  tab: (t: Tab) => void;
+  current: Route;
 }
 
 export const NavContext = createContext<Nav | null>(null);

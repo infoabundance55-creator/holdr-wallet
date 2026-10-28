@@ -3,6 +3,8 @@ import { Header, Icon, Note } from '../components/ui';
 import { shortAddr } from '../lib/format';
 import { useNav } from '../nav';
 import { useApp } from '../state';
+import { useIsDesktop } from '../lib/media';
+import { ConnectWallet, useWallet } from '../wallet/ConnectWallet';
 import { TOTAL_SUPPLY } from './contracts';
 import { pct, price, tokens as fmtTokens, usd, usdgAmount } from './fmt';
 import {
@@ -19,6 +21,7 @@ export function TokenDetail({ token }: { token: string }) {
   const { t, toast } = useApp();
   const nav = useNav();
   const ix = useLaunch();
+  const desktop = useIsDesktop();
   const tk = ix?.get(token);
 
   if (!ix || !tk || !tk.params) {
@@ -38,28 +41,55 @@ export function TokenDetail({ token }: { token: string }) {
   const ch = change(tk, now);
   const soon = () => toast(t('tradeSoon'));
 
+  const id = (
+    <>
+      <div className="lp-id">
+        <TokenAvatar address={tk.token} symbol={tk.symbol} uri={tk.metadataURI} size={desktop ? 72 : 64} />
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><h1>{tk.name}</h1><span className="lp-pill">${tk.symbol}</span></div>
+          <div className="small muted">
+            {t('byCreator', { name: shortAddr(tk.creator) })} · {ago(t, tk.createdAt, now, true)}
+          </div>
+        </div>
+      </div>
+      <div className="lp-price" aria-label={t('priceLabel')}>
+        <span className="p">{price(currentPrice(tk))}</span>
+        <span className={'c ' + deltaClass(ch)}>{pct(ch)}</span>
+        <span className="small muted">{t('past24h')}</span>
+      </div>
+    </>
+  );
+
+  if (desktop) {
+    return (
+      <div className="lp-desk-detail">
+        <button className="lp-crumb" onClick={nav.pop}><Icon name="back" size={18} />{t('allTokens')}</button>
+        <div className="lp-desk-grid">
+          <div className="lp-detail" style={{ padding: 0 }}>
+            {id}
+            <ChartBox tk={tk} now={now} />
+            <Stats tk={tk} now={now} exclude={ix.excluded} />
+            <section className="lp-box"><Tabs tk={tk} now={now} exclude={ix.excluded} /></section>
+          </div>
+          <aside className="lp-detail" style={{ padding: 0 }}>
+            <TradeBox onTrade={soon} />
+            <RoadBox tk={tk} />
+            <SafetyBox tk={tk} />
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen">
       <header className="lp-dhead">
         <button className="lp-round" aria-label={t('back')} onClick={nav.pop}><Icon name="back" size={22} /></button>
+        <span style={{ flex: 1 }} />
+        <ConnectWallet compact />
       </header>
       <div className="lp-detail">
-        <div className="lp-id">
-          <TokenAvatar address={tk.token} symbol={tk.symbol} uri={tk.metadataURI} size={64} />
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><h1>{tk.name}</h1><span className="lp-pill">${tk.symbol}</span></div>
-            <div className="small muted">
-              {t('byCreator', { name: shortAddr(tk.creator) })} · {ago(t, tk.createdAt, now, true)}
-            </div>
-          </div>
-        </div>
-
-        <div className="lp-price" aria-label={t('priceLabel')}>
-          <span className="p">{price(currentPrice(tk))}</span>
-          <span className={'c ' + deltaClass(ch)}>{pct(ch)}</span>
-          <span className="small muted">{t('past24h')}</span>
-        </div>
-
+        {id}
         <ChartBox tk={tk} now={now} />
         <RoadBox tk={tk} />
         <SafetyBox tk={tk} />
@@ -75,6 +105,25 @@ export function TokenDetail({ token }: { token: string }) {
         <span className="hint">{t('tradeSoon')}</span>
       </div>
     </div>
+  );
+}
+
+/** Desktop trade panel. Buying and selling arrive in stage 2b. */
+function TradeBox({ onTrade }: { onTrade: () => void }) {
+  const { t } = useApp();
+  const { isConnected } = useWallet();
+  const [side, setSide] = useState<'buy' | 'sell'>('buy');
+  return (
+    <section className="lp-box">
+      <div className="lp-seg" role="tablist" aria-label={t('tradeLabel')}>
+        <button role="tab" aria-selected={side === 'buy'} className="b" onClick={() => setSide('buy')}>{t('buy')}</button>
+        <button role="tab" aria-selected={side === 'sell'} className="s" onClick={() => setSide('sell')}>{t('sell')}</button>
+      </div>
+      <p className="small muted">{t('tradeSoon')}</p>
+      {isConnected
+        ? <button className={'lp-big ' + (side === 'buy' ? 'b' : 's')} onClick={onTrade}>{t(side === 'buy' ? 'buy' : 'sell')}</button>
+        : <div className="lp-connect-wide"><ConnectWallet /></div>}
+    </section>
   );
 }
 
@@ -195,8 +244,9 @@ function SafetyBox({ tk }: { tk: LaunchToken }) {
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
 function Stats({ tk, now, exclude }: { tk: LaunchToken; now: number; exclude: string[] }) {
-  const { t, signer } = useApp();
-  const mine = signer ? balanceOf(tk, signer.address) : 0n;
+  const { t } = useApp();
+  const { address } = useWallet();
+  const mine = address ? balanceOf(tk, address) : 0n;
   const rows: [string, string][] = [
     [t('sMcap'), usd(marketCap(tk))],
     [t('sVol'), usd(volume(tk, now))],
@@ -234,8 +284,9 @@ function Tabs({ tk, now, exclude }: { tk: LaunchToken; now: number; exclude: str
 }
 
 function Who({ address, tk }: { address: string; tk: LaunchToken }) {
-  const { t, signer } = useApp();
-  const me = signer && address.toLowerCase() === signer.address.toLowerCase();
+  const { t } = useApp();
+  const { address: mine } = useWallet();
+  const me = mine && address.toLowerCase() === mine.toLowerCase();
   const creator = address.toLowerCase() === tk.creator.toLowerCase();
   return (
     <b>

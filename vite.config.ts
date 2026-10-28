@@ -30,8 +30,8 @@ export default defineConfig({
         docs: resolve(__dirname, 'docs/index.html'),
       },
       output: {
-        // Keep the large ethers library in its own cacheable chunk.
-        manualChunks: { ethers: ['ethers'] },
+        // Keep large libraries in their own cacheable chunks.
+        manualChunks: { ethers: ['ethers'], wallet: ['wagmi', 'viem', '@rainbow-me/rainbowkit', '@tanstack/react-query'] },
       },
     },
   },

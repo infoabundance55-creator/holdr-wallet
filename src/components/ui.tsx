@@ -28,6 +28,8 @@ const PATHS: Record<string, ReactNode> = {
   search: <><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></>,
   rocket: <><path d="M12 15l-3-3c1.5-4.5 4.5-7.5 10-8 -.5 5.5-3.5 8.5-8 10z" /><path d="M9 12H5l2-4h4M12 15v4l4-2v-4" /><path d="M6 17c-1 1-1.5 3-1.5 3s2-.5 3-1.5" /></>,
   sparkle: <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6" />,
+  compass: <><circle cx="12" cy="12" r="9" /><path d="M15.5 8.5l-2 5-5 2 2-5z" /></>,
+  star: <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z" />,
   external: <><path d="M14 4h6v6" /><path d="M20 4l-9 9" /><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" /></>,
 };
 

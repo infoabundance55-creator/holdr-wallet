@@ -35,4 +35,3 @@ export const NETWORKS: Record<NetworkId, Network> = {
 };
 
 export const DEFAULT_NETWORK: NetworkId = 'testnet';
-export const AUTO_LOCK_OPTIONS = [1, 5, 15, 60] as const; // minutes
