@@ -1,12 +1,12 @@
 # Holdr contracts
 
-Smart contracts for Holdr on Robinhood Chain. Built with [Foundry](https://getfoundry.sh) and OpenZeppelin Contracts 5.4.
+Smart contracts for Holdr on Robinhood Chain. Built with [Foundry](https://getfoundry.sh), OpenZeppelin Contracts 5.4 and Uniswap v4-core v4.0.0 (tests run against the real PoolManager).
 
 | Contract | Status | What it does |
 | --- | --- | --- |
 | `HoldrGenesis` | written, tested, not deployed | 5,000 free-mint characters in 5 waves, commit-reveal randomness, equip with a 7-day cooldown, 2.5% royalty |
 | `LaunchpadFactory`, `HoldrToken`, `CurvePool` | written, tested, not deployed | token launches on a USDG bonding curve: 1% fee (70% creator / 30% platform), 5-second anti-snipe surcharge, graduation at 10,000 USDG |
-| Migrator, `HoldrLaunchHook`, `LiquidityLocker` | next (step 2) | move graduated liquidity into Uniswap v4 and lock it forever |
+| `HoldrLiquidityLocker`, `HoldrLaunchHook` | written, tested, not deployed | at graduation: open the official Uniswap v4 pool (1% fee), add the liquidity full range and lock it forever; split pool fees 70 / 30 |
 
 The full design is in the contract design doc (Holdr project docs).
 
@@ -56,3 +56,25 @@ After deploying, the owner opens wave 1 with `openWave(startTime)`.
 - Owner (Safe): rule changes wait 48 hours; pausers can stop launches and buys at once (never sells or claims); the per-buy cap can only be raised or removed; renouncing is disabled.
 - Creators claim their fee share with `claimCreatorFees(to)`; anyone can push platform fees to the treasury with `withdrawProtocolFees()`.
 - USDG is upgradeable and its issuer can freeze or seize balances; the pools hold USDG, so that is an accepted external risk.
+
+## Launchpad (step 2): Uniswap v4
+
+- `HoldrLiquidityLocker` is the migrator and the locker in one contract. When a curve graduates, it creates the official pool (token / USDG, fee 1%, tick spacing 200, `HoldrLaunchHook`) at price 10,000 USDG / 200M tokens, adds both as full-range liquidity and keeps the position itself. There is no function to remove liquidity, and the position is not an NFT, so it cannot be transferred.
+- Rounding dust from adding liquidity: leftover tokens are burned, leftover USDG goes to the platform.
+- `collectFees(token)` (anyone): pulls the pool fees and splits them with the token's curve share (70% to the current creator, 30% to the platform), in both the token and USDG. Creators `claim(currency, to)`; anyone can push the platform share to the treasury with `withdrawProtocolFees(currency)`.
+- `HoldrLaunchHook` only implements `beforeInitialize`: nobody but the locker can create a pool with this hook, so nobody can open the official pool early at a wrong price. It never touches swaps or liquidity. Look-alike pools without the hook can exist; the Holdr app only uses the official one (`poolKeyFor(token)`).
+- The hook address must have exactly the `BEFORE_INITIALIZE` flag in its lowest 14 bits. The locker deploys it with CREATE2 using a salt found by `script/HookMiner.sol`.
+- Tested against the real Uniswap v4 PoolManager (compiled from v4-core v4.0.0), with USDG as currency0 and as currency1.
+
+## Deploying the launchpad
+
+```sh
+export POOL_MANAGER=0x...      # Uniswap v4 PoolManager on the chain (mainnet: 0x8366a39cc670b4001a1121b8f6a443a643e40951)
+export USDG=0x...              # mainnet: 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168
+export LAUNCHPAD_OWNER=0x...   # Safe multisig
+export TREASURY=0x...
+export MAX_BUY_USDG=500000000  # $500 per buy at launch; can only be raised or removed later
+forge script script/DeployLaunchpad.s.sol --rpc-url $RPC_URL --broadcast --private-key $DEPLOYER_KEY
+```
+
+The script deploys the locker (which deploys the hook), then the factory, and links them. The deployer key needs only gas; it has no role afterwards.
