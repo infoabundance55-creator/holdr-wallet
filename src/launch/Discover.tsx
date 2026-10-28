@@ -166,7 +166,7 @@ function TokenTable({ list, now, exclude }: { list: LaunchToken[]; now: number; 
                     ? <span className="lp-pill ok"><Icon name="check" size={12} width={3} />{t('graduatedBadge')}</span>
                     : <span className="lp-gradcell"><Bar value={p} /><span className="small num">{Math.floor(p * 100)}%</span></span>}
                 </td>
-                <td className="r small muted">{ago(t, tk.createdAt, now)}</td>
+                <td className="r small muted">{(tk.createdAt ? ago(t, tk.createdAt, now) : '—')}</td>
               </tr>
             );
           })}
@@ -190,7 +190,7 @@ function TokenRow({ tk, now, exclude }: { tk: LaunchToken; now: number; exclude:
           <div className="name"><span className="n">{tk.name}</span><span className="s">${tk.symbol}</span></div>
           <div className="meta">
             <span className="mono">{shortAddr(tk.creator, 6, 4)}</span><span aria-hidden="true">·</span>
-            <span>{ago(t, tk.createdAt, now)}</span><span aria-hidden="true">·</span>
+            <span>{(tk.createdAt ? ago(t, tk.createdAt, now) : '—')}</span><span aria-hidden="true">·</span>
             <span>{holders === 1 ? t('holder1') : t('holdersN', { n: holders.toLocaleString('en-US') })}</span>
           </div>
         </div>

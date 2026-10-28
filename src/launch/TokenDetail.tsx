@@ -48,7 +48,7 @@ export function TokenDetail({ token }: { token: string }) {
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><h1>{tk.name}</h1><span className="lp-pill">${tk.symbol}</span></div>
           <div className="small muted">
-            {t('byCreator', { name: shortAddr(tk.creator) })} · {ago(t, tk.createdAt, now, true)}
+            {t('byCreator', { name: shortAddr(tk.creator) })} · {(tk.createdAt ? ago(t, tk.createdAt, now, true) : '—')}
           </div>
         </div>
       </div>
