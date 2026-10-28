@@ -21,7 +21,7 @@ import {LaunchParams, ILaunchpadFactory, IHoldrMigrator} from "./interfaces/ILau
 ///      in circulation can never take x below virtualUsdg, so realUsdg always covers all sells.
 ///
 ///      With graduation at G USDG, 800M tokens on the curve and 200M for Uniswap:
-///        virtualUsdg = G / 3 (rounded up), initialVirtualTokens = 800M * (virtualUsdg + G) / G (about 1,066.67M).
+///        virtualUsdg = G / 3 (rounded down, plus 1), initialVirtualTokens = 800M * (virtualUsdg + G) / G (about 1,066.67M).
 contract CurvePool is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -121,11 +121,12 @@ contract CurvePool is ReentrancyGuard {
         gradThreshold = p.gradThreshold;
         firstBuyMaxTokens = p.firstBuyMaxTokens;
 
-        // virtualUsdg rounds up and initialVirtualTokens rounds down. Together this guarantees that
-        // at graduation (a) no more than CURVE_SUPPLY is sold and (b) the last curve price is not
-        // above the Uniswap opening price gradThreshold / LP_SUPPLY. Both hold iff
-        // virtualUsdg >= gradThreshold * LP_SUPPLY / (CURVE_SUPPLY - LP_SUPPLY).
-        uint256 v = Math.ceilDiv(p.gradThreshold * LP_SUPPLY, CURVE_SUPPLY - LP_SUPPLY);
+        // virtualUsdg is strictly above G * LP / (CURVE - LP) = G / 3 and initialVirtualTokens rounds
+        // down. Together this guarantees that at graduation (a) no more than CURVE_SUPPLY is sold
+        // and (b) the last curve price is not above gradThreshold / LP_SUPPLY, the Uniswap opening
+        // price (the locker rounds that opening price up in USDG terms). The +1 leaves a margin
+        // for initialVirtualTokens' rounding even when G is divisible by 3.
+        uint256 v = p.gradThreshold * LP_SUPPLY / (CURVE_SUPPLY - LP_SUPPLY) + 1;
         virtualUsdg = v;
         initialVirtualTokens = CURVE_SUPPLY * (v + p.gradThreshold) / p.gradThreshold;
     }
@@ -219,9 +220,11 @@ contract CurvePool is ReentrancyGuard {
         emit CreatorTransferStarted(msg.sender, newCreator);
     }
 
-    /// @notice Step 2: the new wallet accepts. Fees accrued so far stay claimable by the old one.
-    function acceptCreator() external {
+    /// @notice Step 2: the new wallet accepts. Fees earned so far stay claimable by the old one:
+    ///         after graduation, the Uniswap fees not yet collected are collected first.
+    function acceptCreator() external nonReentrant {
         if (msg.sender != pendingCreator) revert OnlyPendingCreator();
+        if (graduated) IHoldrMigrator(migrator).collectFees(address(token));
         address previous = creator;
         creator = msg.sender;
         pendingCreator = address(0);

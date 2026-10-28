@@ -141,7 +141,12 @@ contract HoldrLiquidityLocker is IHoldrMigrator, IUnlockCallback, ReentrancyGuar
         returns (uint160 sqrtPriceX96, uint128 liquidity)
     {
         (uint256 amount0, uint256 amount1) = tokenIs0 ? (tokenAmount, usdgAmount) : (usdgAmount, tokenAmount);
-        sqrtPriceX96 = SafeCast.toUint160(Math.sqrt(FullMath.mulDiv(amount1, 1 << 192, amount0)));
+        // Round so the opening USDG price is never below usdgAmount / tokenAmount, which keeps it
+        // at or above the last curve price: up when the price is USDG per token (token is
+        // currency0), down when it is tokens per USDG.
+        sqrtPriceX96 = tokenIs0
+            ? SafeCast.toUint160(Math.sqrt(FullMath.mulDivRoundingUp(amount1, 1 << 192, amount0), Math.Rounding.Ceil))
+            : SafeCast.toUint160(Math.sqrt(FullMath.mulDiv(amount1, 1 << 192, amount0)));
         liquidity = _liquidityForAmounts(
             sqrtPriceX96,
             TickMath.getSqrtPriceAtTick(TickMath.minUsableTick(TICK_SPACING)),

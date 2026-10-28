@@ -22,4 +22,8 @@ interface ILaunchpadFactory {
 /// @dev The pool transfers `usdgAmount` USDG and `tokenAmount` tokens to the migrator before calling.
 interface IHoldrMigrator {
     function migrate(address token, uint256 usdgAmount, uint256 tokenAmount) external;
+    /// @notice The only factory whose tokens this migrator accepts.
+    function factory() external view returns (address);
+    /// @notice Pulls a graduated token's pool fees and credits them to its current creator.
+    function collectFees(address token) external returns (uint256 tokenFees, uint256 usdgFees);
 }

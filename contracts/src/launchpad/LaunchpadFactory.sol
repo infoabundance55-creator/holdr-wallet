@@ -9,13 +9,15 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {HoldrToken} from "./HoldrToken.sol";
 import {CurvePool} from "./CurvePool.sol";
-import {LaunchParams} from "./interfaces/ILaunchpad.sol";
+import {LaunchParams, IHoldrMigrator} from "./interfaces/ILaunchpad.sol";
 
 /// @title LaunchpadFactory
 /// @notice Launches Holdr tokens. Each launch clones one HoldrToken and one CurvePool and copies the
 ///         current rules into the pool, so later rule changes never touch tokens already launched.
 /// @dev The owner is a Safe multisig. Rule changes wait 48 hours. Pausing stops launches and buys,
-///      never sells or fee claims. The per-buy cap can only be raised or removed.
+///      never sells or fee claims. The per-buy cap can only be raised or removed. The migrator
+///      (the liquidity locker) is fixed at deployment, so no rule change can send graduation
+///      money anywhere else.
 contract LaunchpadFactory is Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -36,6 +38,8 @@ contract LaunchpadFactory is Ownable2Step, ReentrancyGuard {
     IERC20 public immutable usdg;
     address public immutable tokenImplementation;
     address public immutable poolImplementation;
+    /// @notice Where every token's liquidity goes at graduation. Fixed forever.
+    address public immutable migrator;
 
     Config internal _config;
     Config internal _pendingConfig;
@@ -80,11 +84,14 @@ contract LaunchpadFactory is Ownable2Step, ReentrancyGuard {
     error NothingToWithdraw();
     error EthTransferFailed();
     error RenounceDisabled();
+    error MigratorIsFixed();
+    error MigratorNotLinked();
 
     constructor(address initialOwner, IERC20 usdg_, Config memory config_, uint256 maxBuyUsdg_) Ownable(initialOwner) {
-        if (address(usdg_) == address(0)) revert ZeroAddress();
-        _validate(config_);
+        if (address(usdg_) == address(0) || config_.params.migrator == address(0)) revert ZeroAddress();
+        _validate(config_, config_.params.migrator);
         usdg = usdg_;
+        migrator = config_.params.migrator;
         tokenImplementation = address(new HoldrToken());
         poolImplementation = address(new CurvePool());
         _config = config_;
@@ -110,6 +117,8 @@ contract LaunchpadFactory is Ownable2Step, ReentrancyGuard {
         uint256 minTokensOut
     ) external payable nonReentrant returns (address token, address pool) {
         if (paused) revert LaunchPaused();
+        // the locker is linked to this factory after deployment; never launch before that
+        if (IHoldrMigrator(migrator).factory() != address(this)) revert MigratorNotLinked();
         uint256 fee = _config.launchFee;
         if (msg.value != fee) revert WrongLaunchFee(fee);
         if (bytes(name_).length == 0 || bytes(name_).length > 32) revert BadName();
@@ -155,7 +164,7 @@ contract LaunchpadFactory is Ownable2Step, ReentrancyGuard {
     /// @notice Proposes new rules for future launches, launch fee and treasury. Replaces any
     ///         pending proposal and restarts the 48-hour wait.
     function proposeConfig(Config calldata config_) external onlyOwner {
-        _validate(config_);
+        _validate(config_, migrator);
         _pendingConfig = config_;
         pendingConfigEta = block.timestamp + CONFIG_DELAY;
         emit ConfigProposed(pendingConfigEta, config_);
@@ -178,9 +187,10 @@ contract LaunchpadFactory is Ownable2Step, ReentrancyGuard {
         emit ConfigCancelled();
     }
 
-    function _validate(Config memory c) internal pure {
+    function _validate(Config memory c, address fixedMigrator) internal pure {
         LaunchParams memory p = c.params;
-        if (c.treasury == address(0) || p.migrator == address(0)) revert ZeroAddress();
+        if (c.treasury == address(0)) revert ZeroAddress();
+        if (p.migrator != fixedMigrator) revert MigratorIsFixed();
         if (
             c.launchFee > MAX_LAUNCH_FEE || p.feeBps > MAX_FEE_BPS || p.creatorShareBps > 10_000
                 || p.gradThreshold < MIN_GRAD_THRESHOLD || p.gradThreshold > MAX_GRAD_THRESHOLD

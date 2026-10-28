@@ -329,6 +329,67 @@ abstract contract GraduationBase is Test {
         assertApproxEqRel(_poolMcap(address(token)), 50_000 * USD, 3e16);
     }
 
+    /// The last curve price is never above the actual opening price of the pool (exact integer check
+    /// against the pool's sqrtPrice, both currency orders).
+    function _assertNoPriceDrop(CurvePool pool, address token) internal view {
+        (uint256 x, uint256 y) = pool.reserves();
+        PoolKey memory key = locker.poolKeyFor(token);
+        (uint160 sqrtP,,,) = pm.getSlot0(key.toId());
+        uint256 s2 = uint256(sqrtP) * uint256(sqrtP);
+        if (Currency.unwrap(key.currency0) == token) {
+            // pool price = s2 / 2^192 USDG per token; need x / y <= that
+            assertLe(FullMath.mulDivRoundingUp(x, 1 << 192, y), s2, "curve end above pool open");
+        } else {
+            // pool price = s2 / 2^192 tokens per USDG; need x / y <= 2^192 / s2
+            assertLe(FullMath.mulDivRoundingUp(x, s2, 1 << 192), y, "curve end above pool open");
+        }
+    }
+
+    function test_priceContinuity_strictAgainstRealPool() public {
+        (HoldrToken token, CurvePool pool) = _graduated();
+        _assertNoPriceDrop(pool, address(token));
+    }
+
+    /// Review L-2: the graduating buy costs far more gas than a normal buy; the app must budget it.
+    function test_graduatingBuy_gas() public {
+        (, CurvePool pool) = _launch();
+        vm.warp(block.timestamp + 5);
+        _buyCurve(pool, alice, 3_000 * USD);
+        vm.startPrank(bob);
+        usdg.approve(address(pool), 20_000 * USD);
+        uint256 g0 = gasleft();
+        pool.buy(20_000 * USD, 0, block.timestamp);
+        uint256 used = g0 - gasleft();
+        vm.stopPrank();
+        emit log_named_uint("graduating buy gas", used);
+        assertLt(used, 800_000, "app sets a gas limit of 800k near graduation");
+    }
+
+    /// Review L-1: a locker linked to a different factory makes launches revert up front.
+    function test_launch_rejectsLockerOfAnotherFactory() public {
+        LaunchpadFactory.Config memory c = factory.config();
+        LaunchpadFactory other = new LaunchpadFactory(owner, usdg, c, 0);
+        vm.prank(creator);
+        vm.expectRevert(LaunchpadFactory.MigratorNotLinked.selector);
+        other.createToken{value: 0.0005 ether}("A", "A", "", 0, 0);
+    }
+
+    /// Review L-3: Uniswap fees earned before a creator handover go to the old creator.
+    function test_creatorHandover_pendingUniswapFeesStayWithOldCreator() public {
+        (HoldrToken token, CurvePool pool) = _graduated();
+        _swap(alice, locker.poolKeyFor(address(token)), address(usdg), 1_000 * USD);
+        vm.prank(creator);
+        pool.proposeCreator(bob);
+        vm.prank(bob);
+        pool.acceptCreator(); // collects first
+        assertApproxEqAbs(locker.owed(creator, address(usdg)), 7 * USD, 1);
+        assertEq(locker.owed(bob, address(usdg)), 0);
+
+        _swap(alice, locker.poolKeyFor(address(token)), address(usdg), 1_000 * USD);
+        locker.collectFees(address(token));
+        assertApproxEqAbs(locker.owed(bob, address(usdg)), 7 * USD, 1);
+    }
+
     // ---------------------------------------------------------------- hook
 
     function test_hook_onlyPoolManagerAndLocker() public {
@@ -396,9 +457,7 @@ abstract contract GraduationBase is Test {
         _buyCurve(pool, bob, 20_000 * USD);
         assertTrue(pool.graduated());
         assertApproxEqRel(_poolMcap(address(token)), 50_000 * USD, 1e12);
-        (uint256 x, uint256 y) = pool.reserves();
-        // last curve price (x / y) <= pool opening price, as market caps
-        assertLe(x * 1_000_000_000 ether / y, _poolMcap(address(token)) + 1);
+        _assertNoPriceDrop(pool, address(token));
         assertEq(token.totalSupply(), pool.tokensSold() + token.balanceOf(address(pm)));
     }
 }

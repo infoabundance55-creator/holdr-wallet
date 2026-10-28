@@ -710,7 +710,7 @@ contract LaunchpadTest is LaunchpadBase {
         vm.startPrank(owner);
         vm.expectRevert(LaunchpadFactory.ZeroAddress.selector);
         factory.proposeConfig(bad[0]);
-        vm.expectRevert(LaunchpadFactory.ZeroAddress.selector);
+        vm.expectRevert(LaunchpadFactory.MigratorIsFixed.selector);
         factory.proposeConfig(bad[1]);
         for (uint256 i = 2; i < 9; ++i) {
             vm.expectRevert(LaunchpadFactory.InvalidConfig.selector);
@@ -720,6 +720,47 @@ contract LaunchpadTest is LaunchpadBase {
 
         vm.expectRevert(LaunchpadFactory.ZeroAddress.selector);
         new LaunchpadFactory(owner, MockUSDG(address(0)), _config(), 0);
+        LaunchpadFactory.Config memory noMigrator = _config();
+        noMigrator.params.migrator = address(0);
+        vm.expectRevert(LaunchpadFactory.ZeroAddress.selector);
+        new LaunchpadFactory(owner, usdg, noMigrator, 0);
+    }
+
+    /// Review M-1: the owner cannot point future launches' graduation money anywhere else.
+    function test_migrator_cannotBeChangedEvenWithTimelock() public {
+        assertEq(factory.migrator(), address(migrator));
+        LaunchpadFactory.Config memory c = _config();
+        c.params.migrator = makeAddr("evilMigrator");
+        vm.prank(owner);
+        vm.expectRevert(LaunchpadFactory.MigratorIsFixed.selector);
+        factory.proposeConfig(c);
+    }
+
+    /// Review L-1: no launches until the migrator is linked to this factory.
+    function test_launch_revertsIfMigratorNotLinked() public {
+        migrator.setUnlinked(true);
+        vm.prank(creator);
+        vm.expectRevert(LaunchpadFactory.MigratorNotLinked.selector);
+        factory.createToken{value: LAUNCH_FEE}("A", "A", "", 0, 0);
+    }
+
+    /// Review L-3: at a creator handover after graduation, pending Uniswap fees are collected
+    /// first (so they go to the old creator); before graduation nothing is called.
+    function test_creatorHandover_collectsUniswapFeesOnlyAfterGraduation() public {
+        (, CurvePool pool) = _launch(0);
+        vm.prank(creator);
+        pool.proposeCreator(bob);
+        vm.prank(bob);
+        pool.acceptCreator();
+        assertEq(migrator.collects(), 0);
+
+        vm.warp(block.timestamp + 5);
+        _buy(pool, alice, 20_000 * USD);
+        vm.prank(bob);
+        pool.proposeCreator(alice);
+        vm.prank(alice);
+        pool.acceptCreator();
+        assertEq(migrator.collects(), 1);
     }
 
     function test_ownership_twoStep_noRenounce() public {

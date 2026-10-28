@@ -78,3 +78,25 @@ forge script script/DeployLaunchpad.s.sol --rpc-url $RPC_URL --broadcast --priva
 ```
 
 The script deploys the locker (which deploys the hook), then the factory, and links them. The deployer key needs only gas; it has no role afterwards.
+
+## Security review (launchpad, 2026-10-28)
+
+An independent AI review of all launchpad contracts found no critical or high issues. Fixed:
+
+- **M-1** The migrator could be changed through the timelock, sending future launches' graduation money elsewhere. Now the migrator is fixed when the factory is deployed (`LaunchpadFactory.migrator`); rule changes cannot touch it.
+- **L-1** A locker not linked to the factory would have made graduation impossible. `createToken` now reverts unless `migrator.factory() == factory`.
+- **L-3** Uniswap fees not yet collected at a creator handover would have gone to the new creator. `acceptCreator` now collects them first.
+- **I-1** Price continuity is now strict: the virtual USDG reserve is G / 3 rounded down plus 1, and the locker rounds the opening price up in USDG terms. Tests check it against the real pool's `sqrtPrice` for every G (1,000 to 1,000,000 USDG), every fee (0 to 5%) and both currency orders.
+
+The reviewer's proof-of-concept fuzz tests are now part of the suite (`GraduationRange.t.sol`, `CurveExtremes.invariant.t.sol`).
+
+## Trust assumptions and notes for the app (launchpad)
+
+- **Graduating buy gas:** the buy that triggers graduation costs about 515k gas, against about 24k for a normal buy. When `realUsdg + toCurve` is close to the threshold, the app must set a gas limit of at least 800k.
+- **Pause** stops launches and buys, so it also stops graduation; sells and claims always work. Only the Safe can unpause, so pausers should be keys the Safe owner controls.
+- **Per-buy cap** is per call: several calls in one transaction get around it. It limits mistakes, not whales.
+- **Donations are lost:** USDG sent straight to a curve pool, or anything sent to the locker, cannot be recovered. Tokens sent to a curve pool are burned at graduation.
+- **After graduation**, `realUsdg` and `reserves()` keep their final values; the app must check `graduated()`.
+- **The curve's allowance** shows as unlimited and cannot be removed in wallet approval scanners. That is safe: the curve only pulls from whoever calls `sell`, and selling stops at graduation.
+- **The official pool** is `locker.poolKeyFor(token)`. Anyone can add their own liquidity to it, and look-alike pools or fake curve pools can exist. The app and indexer only list tokens from the factory's `TokenCreated` events.
+- **Locked liquidity:** once graduated, the 200M tokens and G USDG stay in the pool forever, so if every curve buyer sold into Uniswap together they would get back about 80% of G, not 100% as on the curve. This is the cost of permanently locked liquidity.

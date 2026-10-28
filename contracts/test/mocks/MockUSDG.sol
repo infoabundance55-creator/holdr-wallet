@@ -44,6 +44,23 @@ contract MockMigrator is IHoldrMigrator {
         usdg = usdg_;
     }
 
+    bool public unlinked;
+    uint256 public collects;
+
+    function setUnlinked(bool on) external {
+        unlinked = on;
+    }
+
+    /// @dev Linked to whichever factory asks (so one mock serves every test factory), unless unlinked.
+    function factory() external view returns (address) {
+        return unlinked ? address(0xdead) : msg.sender;
+    }
+
+    function collectFees(address) external returns (uint256, uint256) {
+        ++collects;
+        return (0, 0);
+    }
+
     function migrate(address token, uint256 usdgAmount, uint256 tokenAmount) external {
         require(IERC20(token).balanceOf(address(this)) >= tokenAmount, "tokens not received");
         require(usdg.balanceOf(address(this)) >= usdgAmount, "usdg not received");
