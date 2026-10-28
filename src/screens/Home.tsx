@@ -250,6 +250,9 @@ function Me() {
 
         <h2 className="group-label">{t('secAbout')}</h2>
         <div className="group" style={{ marginTop: -10 }}>
+          <a className="set-row" href="/docs" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <span style={{ flex: 1 }}>{t('helpDocs')}</span><span className="v" aria-hidden="true">↗</span>
+          </a>
           <div className="set-row" style={{ cursor: 'default' }}><span style={{ flex: 1 }}>{t('version')}</span><span className="v">0.1.0</span></div>
           <Row label={t('removeWallet')} danger onClick={() => setSheet('remove')} />
         </div>

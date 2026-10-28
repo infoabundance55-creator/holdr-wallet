@@ -75,7 +75,7 @@ const zh = {
   meTitle: '我的', myWallet: '我的钱包', secWallet: '钱包', backupPhrase: '查看助记词', notBacked: '未备份',
   changePw: '修改密码', secPref: '偏好设置', language: '语言', langName: '简体中文',
   networkLabel: '网络', secSafety: '安全', autoLock: '自动锁定', minutes: '{n} 分钟', lockNow: '立即锁定',
-  secAbout: '关于', version: '版本', removeWallet: '从这个浏览器移除钱包',
+  secAbout: '关于', helpDocs: '帮助与文档', version: '版本', removeWallet: '从这个浏览器移除钱包',
   removeBody: '移除后需要用助记词重新导入。请先确认你已经抄下助记词。', removeConfirm: '确认移除',
   locked: '已锁定',
   // change password
@@ -153,7 +153,7 @@ const en: Record<Key, string> = {
   meTitle: 'Me', myWallet: 'My wallet', secWallet: 'Wallet', backupPhrase: 'View recovery phrase', notBacked: 'Not backed up',
   changePw: 'Change password', secPref: 'Preferences', language: 'Language', langName: 'English',
   networkLabel: 'Network', secSafety: 'Security', autoLock: 'Auto-lock', minutes: '{n} min', lockNow: 'Lock now',
-  secAbout: 'About', version: 'Version', removeWallet: 'Remove wallet from this browser',
+  secAbout: 'About', helpDocs: 'Help & docs', version: 'Version', removeWallet: 'Remove wallet from this browser',
   removeBody: 'You will need your recovery phrase to import it again. Make sure you have it written down.', removeConfirm: 'Remove',
   locked: 'Locked',
   curPw: 'Current password', newPw: 'New password', newPwAgain: 'Confirm new password', savePw: 'Save new password', pwUpdated: 'Password updated',
