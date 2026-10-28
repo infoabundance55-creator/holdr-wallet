@@ -6,6 +6,7 @@ import { Backup, Import, SetPassword, Verify, Welcome } from './screens/Onboardi
 import { Send } from './screens/Send';
 import { ChangePw, Receive, Reveal } from './screens/Account';
 import { Unlock } from './screens/Unlock';
+import { TokenDetail } from './launch/TokenDetail';
 import { screen as trackScreen } from './lib/analytics';
 
 const ONBOARDING = new Set<Route['name']>(['welcome', 'backup', 'verify', 'password', 'import']);
@@ -32,7 +33,7 @@ function Router() {
   useEffect(() => { window.scrollTo(0, 0); }, [current]);
 
   // Anonymous screen views for the usage funnel (no addresses or amounts).
-  const screenName = current.name === 'home' ? `home-${current.tab}` : current.name;
+  const screenName = current.name === 'home' ? `home-${current.tab}` : current.name; // token screens report as 'token', never the address
   useEffect(() => { trackScreen(screenName); }, [screenName]);
 
   const push = useCallback((r: Route) => {
@@ -59,6 +60,7 @@ function Router() {
     case 'receive': screen = signer ? <Receive /> : null; break;
     case 'changePw': screen = <ChangePw />; break;
     case 'reveal': screen = <Reveal />; break;
+    case 'token': screen = signer ? <TokenDetail token={current.token} /> : null; break;
   }
 
   return (

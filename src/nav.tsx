@@ -2,7 +2,7 @@ import type { HDNodeWallet } from 'ethers';
 import { createContext, useContext } from 'react';
 import type { Signer } from './lib/vault';
 
-export type Tab = 'assets' | 'activity' | 'me';
+export type Tab = 'assets' | 'launch' | 'activity' | 'me';
 
 export type Route =
   | { name: 'welcome' }
@@ -15,7 +15,8 @@ export type Route =
   | { name: 'send' }
   | { name: 'receive' }
   | { name: 'changePw' }
-  | { name: 'reveal' };
+  | { name: 'reveal' }
+  | { name: 'token'; token: string };
 
 export interface Nav {
   push: (r: Route) => void;

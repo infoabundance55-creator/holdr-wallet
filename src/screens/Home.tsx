@@ -7,6 +7,7 @@ import { clearLocalData, loadTxs, saveTxs, type SentTx } from '../lib/store';
 import { clearVault } from '../lib/vault';
 import { goal } from '../lib/analytics';
 import { useNav, type Tab } from '../nav';
+import { Discover } from '../launch/Discover';
 import { useApp } from '../state';
 
 export function Home({ tab }: { tab: Tab }) {
@@ -16,11 +17,12 @@ export function Home({ tab }: { tab: Tab }) {
   return (
     <div className="screen">
       {tab === 'assets' && <Assets onHistory={() => go('activity')} />}
+      {tab === 'launch' && <Discover />}
       {tab === 'activity' && <Activity />}
       {tab === 'me' && <Me />}
       <div className="spacer-nav" />
       <nav className="bottom-nav" aria-label={t('mainNav')}>
-        {([['assets', 'wallet', 'navAssets'], ['activity', 'activity', 'navActivity'], ['me', 'user', 'navMe']] as const).map(([id, icon, label]) => (
+        {([['assets', 'wallet', 'navAssets'], ['launch', 'rocket', 'navLaunch'], ['activity', 'activity', 'navActivity'], ['me', 'user', 'navMe']] as const).map(([id, icon, label]) => (
           <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => go(id)}>
             <Icon name={icon} size={24} />{t(label)}
           </button>
