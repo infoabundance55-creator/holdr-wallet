@@ -129,7 +129,7 @@ function TokenRow({ tk, now, exclude }: { tk: LaunchToken; now: number; exclude:
           <div className="meta">
             <span className="mono">{shortAddr(tk.creator, 6, 4)}</span><span aria-hidden="true">·</span>
             <span>{ago(t, tk.createdAt, now)}</span><span aria-hidden="true">·</span>
-            <span>{t('holdersN', { n: holders.toLocaleString('en-US') })}</span>
+            <span>{holders === 1 ? t('holder1') : t('holdersN', { n: holders.toLocaleString('en-US') })}</span>
           </div>
         </div>
         <div className="end">
