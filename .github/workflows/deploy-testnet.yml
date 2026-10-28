@@ -1,16 +1,24 @@
 name: Deploy contracts to testnet
 
-# Manual only: Actions tab -> "Deploy contracts to testnet" -> Run workflow -> type DEPLOY.
-# Deploys the launchpad to Robinhood Chain testnet (46630) from the `contracts` branch with the
-# DEPLOYER_KEY secret, then commits the new addresses to contracts/deployments/46630.json.
+# Manual only: Actions tab -> "Deploy contracts to testnet" -> Run workflow -> choose an action,
+# type DEPLOY. Runs from the `contracts` branch on Robinhood Chain testnet (46630) with the
+# DEPLOYER_KEY secret.
+#   deploy: deploy the launchpad, commit addresses to contracts/deployments/46630.json
+#   smoke:  walk through the whole flow with the deployer wallet (launch, buy, sell, graduate,
+#           Uniswap trades, fees) and commit a report to contracts/deployments/46630-smoke.md
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: What to do
+        type: choice
+        options: [smoke, deploy]
+        default: smoke
       confirm:
         description: Type DEPLOY to confirm
         required: true
       max_buy_usdg:
-        description: Per-buy cap in USDG units (6 decimals); 0 = no cap
+        description: (deploy only) per-buy cap in USDG units (6 decimals); 0 = no cap
         required: false
         default: "0"
 
@@ -21,9 +29,13 @@ concurrency:
   group: deploy-testnet
   cancel-in-progress: false
 
+env:
+  RPC: https://rpc.testnet.chain.robinhood.com
+  EXPLORER: https://explorer.testnet.chain.robinhood.com
+
 jobs:
   deploy:
-    if: github.event.inputs.confirm == 'DEPLOY'
+    if: github.event.inputs.confirm == 'DEPLOY' && github.event.inputs.action == 'deploy'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,13 +47,10 @@ jobs:
       - name: Check deployer
         env:
           DEPLOYER_KEY: ${{ secrets.DEPLOYER_KEY }}
-          RPC: https://rpc.testnet.chain.robinhood.com
         run: |
           if [ -z "$DEPLOYER_KEY" ]; then echo "::error::DEPLOYER_KEY secret is missing"; exit 1; fi
-          KEY="0x${DEPLOYER_KEY#0x}"
-          ADDR=$(cast wallet address --private-key "$KEY")
+          ADDR=$(cast wallet address --private-key "0x${DEPLOYER_KEY#0x}")
           BAL=$(cast balance --rpc-url "$RPC" "$ADDR" --ether)
-          echo "Deployer $ADDR has $BAL testnet ETH"
           echo "### Deployer: \`$ADDR\` ($BAL ETH)" >> "$GITHUB_STEP_SUMMARY"
       - name: Test
         working-directory: contracts
@@ -52,18 +61,84 @@ jobs:
           DEPLOYER_KEY: ${{ secrets.DEPLOYER_KEY }}
           MAX_BUY_USDG: ${{ github.event.inputs.max_buy_usdg }}
         run: |
-          forge script script/testnet/DeployTestnet.s.sol \
-            --rpc-url https://rpc.testnet.chain.robinhood.com \
-            --broadcast --slow \
+          forge script script/testnet/DeployTestnet.s.sol --rpc-url "$RPC" --broadcast --slow \
             --private-key "0x${DEPLOYER_KEY#0x}"
-          echo '### Deployed (Robinhood Chain testnet)' >> "$GITHUB_STEP_SUMMARY"
-          echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          cat deployments/46630.json >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo '### Deployed (Robinhood Chain testnet)'
+            echo '```json'
+            cat deployments/46630.json
+            echo
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Save addresses to the repo
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add contracts/deployments/46630.json
           git commit -m "Testnet deployment addresses (run ${{ github.run_id }})"
+          git push origin HEAD:contracts
+
+  smoke:
+    if: github.event.inputs.confirm == 'DEPLOY' && github.event.inputs.action == 'smoke'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: contracts
+          submodules: recursive
+      - name: Install Foundry v1.5.1
+        run: curl -sSL https://github.com/foundry-rs/foundry/releases/download/v1.5.1/foundry_v1.5.1_linux_amd64.tar.gz | sudo tar xz -C /usr/local/bin forge cast
+      - name: Part 1 - launch a token
+        working-directory: contracts
+        env:
+          DEPLOYER_KEY: ${{ secrets.DEPLOYER_KEY }}
+        run: |
+          forge script script/testnet/SmokeTestnet.s.sol --sig "launch()" --rpc-url "$RPC" --broadcast --slow \
+            --private-key "0x${DEPLOYER_KEY#0x}"
+      - name: Wait out the 5-second anti-snipe window
+        run: sleep 15
+      - name: Part 2 - trade, graduate, Uniswap, fees
+        working-directory: contracts
+        env:
+          DEPLOYER_KEY: ${{ secrets.DEPLOYER_KEY }}
+        run: |
+          forge script script/testnet/SmokeTestnet.s.sol --sig "trade()" --rpc-url "$RPC" --broadcast --slow \
+            --private-key "0x${DEPLOYER_KEY#0x}"
+      - name: Report
+        working-directory: contracts
+        run: |
+          TOKEN=$(jq -r .token deployments/46630-smoke.json)
+          POOL=$(jq -r .curvePool deployments/46630-smoke.json)
+          R=deployments/46630-smoke.md
+          {
+            echo "# Testnet walkthrough (run ${{ github.run_id }})"
+            echo
+            echo "- Token: [$TOKEN]($EXPLORER/address/$TOKEN)"
+            echo "- Curve pool: [$POOL]($EXPLORER/address/$POOL)"
+            echo "- Graduated: $(cast call --rpc-url "$RPC" "$POOL" 'graduated()(bool)')"
+            echo "- Tokens sold on the curve: $(cast call --rpc-url "$RPC" "$POOL" 'tokensSold()(uint256)' | cut -d' ' -f1)"
+            echo "- Total supply after burn: $(cast call --rpc-url "$RPC" "$TOKEN" 'totalSupply()(uint256)' | cut -d' ' -f1)"
+            echo "- USDG raised on the curve: $(cast call --rpc-url "$RPC" "$POOL" 'realUsdg()(uint256)' | cut -d' ' -f1)"
+            echo
+            echo "## Transactions"
+            echo
+            echo "| # | Step | Transaction |"
+            echo "|---|---|---|"
+            n=0
+            for part in launch trade; do
+              f="broadcast/SmokeTestnet.s.sol/46630/$part-latest.json"
+              [ -f "$f" ] || continue
+              while IFS=$'\t' read -r fn hash; do
+                n=$((n+1)); echo "| $n | $fn | [${hash:0:12}…]($EXPLORER/tx/$hash) |"
+              done < <(jq -r '.transactions[] | [(.function // .transactionType), .hash] | @tsv' "$f")
+            done
+          } > "$R"
+          cat "$R" >> "$GITHUB_STEP_SUMMARY"
+      - name: Save the report to the repo
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add contracts/deployments/46630-smoke.json contracts/deployments/46630-smoke.md 2>/dev/null || true
+          git commit -m "Testnet walkthrough report (run ${{ github.run_id }})" || exit 0
           git push origin HEAD:contracts
