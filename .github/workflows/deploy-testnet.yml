@@ -1,0 +1,69 @@
+name: Deploy contracts to testnet
+
+# Manual only: Actions tab -> "Deploy contracts to testnet" -> Run workflow -> type DEPLOY.
+# Deploys the launchpad to Robinhood Chain testnet (46630) from the `contracts` branch with the
+# DEPLOYER_KEY secret, then commits the new addresses to contracts/deployments/46630.json.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type DEPLOY to confirm
+        required: true
+      max_buy_usdg:
+        description: Per-buy cap in USDG units (6 decimals); 0 = no cap
+        required: false
+        default: "0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-testnet
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.inputs.confirm == 'DEPLOY'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: contracts
+          submodules: recursive
+      - name: Install Foundry v1.5.1
+        run: curl -sSL https://github.com/foundry-rs/foundry/releases/download/v1.5.1/foundry_v1.5.1_linux_amd64.tar.gz | sudo tar xz -C /usr/local/bin forge cast
+      - name: Check deployer
+        env:
+          DEPLOYER_KEY: ${{ secrets.DEPLOYER_KEY }}
+          RPC: https://rpc.testnet.chain.robinhood.com
+        run: |
+          if [ -z "$DEPLOYER_KEY" ]; then echo "::error::DEPLOYER_KEY secret is missing"; exit 1; fi
+          KEY="0x${DEPLOYER_KEY#0x}"
+          ADDR=$(cast wallet address --private-key "$KEY")
+          BAL=$(cast balance --rpc-url "$RPC" "$ADDR" --ether)
+          echo "Deployer $ADDR has $BAL testnet ETH"
+          echo "### Deployer: \`$ADDR\` ($BAL ETH)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Test
+        working-directory: contracts
+        run: forge test
+      - name: Deploy
+        working-directory: contracts
+        env:
+          DEPLOYER_KEY: ${{ secrets.DEPLOYER_KEY }}
+          MAX_BUY_USDG: ${{ github.event.inputs.max_buy_usdg }}
+        run: |
+          forge script script/testnet/DeployTestnet.s.sol \
+            --rpc-url https://rpc.testnet.chain.robinhood.com \
+            --broadcast --slow \
+            --private-key "0x${DEPLOYER_KEY#0x}"
+          echo '### Deployed (Robinhood Chain testnet)' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat deployments/46630.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - name: Save addresses to the repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add contracts/deployments/46630.json
+          git commit -m "Testnet deployment addresses (run ${{ github.run_id }})"
+          git push origin HEAD:contracts
