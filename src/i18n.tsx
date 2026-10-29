@@ -165,6 +165,24 @@ const zh = {
   snipeNow: '开盘附加费 {p}%', impactHigh: '价格影响很大（{p}%），确认后再送出。',
   noEthNote: '需要一点测试 ETH 付 gas。', routerMissing: '这个网络还不能在 Uniswap 交易。',
   sellNoApprove: '卖出不用授权。', slipCustom: '自订',
+  // me (stage 3a)
+  meHoldVal: '持仓价值', meUsdg: 'TEST USDG', meEth: 'ETH（GAS）',
+  meHoldings: '持仓', meHoldingsSub: '持有天数加成', meHoldReset: '当天最低持仓比前一天少一半以上，天数会从头算。',
+  thToken: '代币', thAmount: '数量', thValue: '价值', thPnl: '盈亏', thBoost: '持有加成',
+  holdDayN: '第 {n} 天', holdTomorrow: '明天开始算', holdNext15: '{n} 天后 ×1.5', holdNext2: '{n} 天后 ×2', holdMax: '已达最高加成',
+  holdBoost: '持有 ×{m}', holdEmpty: '还没有持仓。挑一个币买入，拿得越久，每天的持有积分越多。', pnlNone: '转入，不计盈亏',
+  meLaunched: '我发的币', launchedEmpty: '你还没发过币。发币者拿每笔交易手续费的 70%。',
+  feesToClaim: '可领手续费', feesEarned: '累计已赚 {n} USDG', claim: '领取', noFees: '暂无',
+  claimStep: '在钱包确认（{i}/{n}）', claimPending: '等待链上确认（{i}/{n}）…', claimDone: '手续费已领取',
+  lockerFees: 'Uniswap 手续费（已结算）', lockerFeesSub: '所有已毕业的币合在一起领取。',
+  feesPlusTok: '+ {amt} {sym}',
+  mePoints: '我的积分 · S1', mePointsSub: '你在 HODL Town 的房子从帐篷开始，跟着累计积分升级。',
+  meChars: '我的角色', meCharsSub: 'NFT 角色即将推出：免费 mint，gas 自付。绑定后有积分加成。',
+  boostTrade: '交易 +20%', boostLaunch: '发币 +20%', boostHold: '持有 +20%', boostAll: '全部 +10%',
+  meActivity: '交易记录', actEmpty: '还没有记录。',
+  actBuy: '买入 {amt} {sym}，花 {usdg} USDG', actSell: '卖出 {amt} {sym}，得到 {usdg} USDG', actLaunch: '发了 {name}（${sym}）',
+  actClaim: '领取 {amt} {cur} 手续费', tagBuy: '买', tagSell: '卖', tagNew: '发币', tagFee: '手续费',
+  meLoading: '正在读取链上数据…',
 };
 
 export type Key = keyof typeof zh;
@@ -327,6 +345,24 @@ const en: Record<Key, string> = {
   snipeNow: 'Launch surcharge {p}%', impactHigh: 'High price impact ({p}%). Double-check before you send.',
   noEthNote: 'You need a little test ETH for gas.', routerMissing: 'Uniswap trading isn\'t available on this network yet.',
   sellNoApprove: 'Selling needs no approval.', slipCustom: 'Custom',
+  // me (stage 3a)
+  meHoldVal: 'HOLDINGS', meUsdg: 'TEST USDG', meEth: 'ETH (GAS)',
+  meHoldings: 'Holdings', meHoldingsSub: 'Hold boost by days held', meHoldReset: 'Days reset if your daily lowest balance drops by more than half.',
+  thToken: 'Token', thAmount: 'Amount', thValue: 'Value', thPnl: 'P&L', thBoost: 'Hold boost',
+  holdDayN: 'Day {n}', holdTomorrow: 'Counts from tomorrow', holdNext15: '×1.5 in {n} days', holdNext2: '×2 in {n} days', holdMax: 'Max boost',
+  holdBoost: 'HOLD ×{m}', holdEmpty: 'No holdings yet. Buy a token and hold it: the longer you hold, the more hold points each day.', pnlNone: 'Transferred in',
+  meLaunched: 'Tokens I launched', launchedEmpty: "You haven't launched a token yet. Creators get 70% of every trading fee.",
+  feesToClaim: 'FEES TO CLAIM', feesEarned: 'Total earned {n} USDG', claim: 'Claim', noFees: 'None yet',
+  claimStep: 'Confirm in your wallet ({i}/{n})', claimPending: 'Waiting for the chain ({i}/{n})…', claimDone: 'Fees claimed',
+  lockerFees: 'Uniswap fees (collected)', lockerFeesSub: 'Claimed together for all your graduated tokens.',
+  feesPlusTok: '+ {amt} {sym}',
+  mePoints: 'My points · Season 1', mePointsSub: 'Your HODL Town house starts as a tent and grows with your total points.',
+  meChars: 'My characters', meCharsSub: 'Characters are coming soon: free mint, you pay gas. A bound character boosts your points.',
+  boostTrade: 'TRADE +20%', boostLaunch: 'LAUNCH +20%', boostHold: 'HOLD +20%', boostAll: 'ALL +10%',
+  meActivity: 'Activity', actEmpty: 'No activity yet.',
+  actBuy: 'Bought {amt} {sym} for {usdg} USDG', actSell: 'Sold {amt} {sym} for {usdg} USDG', actLaunch: 'Launched {name} (${sym})',
+  actClaim: 'Claimed {amt} {cur} in fees', tagBuy: 'BUY', tagSell: 'SELL', tagNew: 'NEW', tagFee: 'FEE',
+  meLoading: 'Reading the chain…',
 };
 
 export const DICTS: Record<Lang, Record<Key, string>> = { zh, en };
