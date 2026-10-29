@@ -138,12 +138,11 @@ function WalletCard({ address, total, ix, desktop }: { address: Address; total: 
         </div>
         <button className="td-iconbtn" aria-label={t('copyAddress')} onClick={async () => { if (await copyText(address)) toast(t('copied')); }}><Icon name="copy" size={18} /></button>
         <a className="td-iconbtn" aria-label={t('viewExplorer')} href={`${network.explorer}/address/${address}`} target="_blank" rel="noopener noreferrer"><Icon name="external" size={18} /></a>
-        {!desktop && <button className="me-ghost" onClick={() => { disconnect(); toast(t('disconnected')); }}>{t('disconnect')}</button>}
       </div>
       <dl className="me-stats">
         <div><dt>{t('meHoldVal')}</dt><dd>{usd(total)}</dd></div>
         <div><dt>{network.id === 'testnet' ? t('meUsdg') : 'USDG'}</dt><dd>{usdg.data != null ? fmtRaw(usdg.data as bigint, 6) : '—'}</dd></div>
-        <div><dt>{t('meEth')}</dt><dd>{ethN != null ? ethN.toLocaleString('en-US', { maximumFractionDigits: 4 }) : '—'}</dd></div>
+        <div><dt>{t('meEth')}</dt><dd>{ethN != null ? ethN.toLocaleString('en-US', { maximumFractionDigits: ethN >= 100 ? 0 : 4 }) : '—'}</dd></div>
       </dl>
       <div className="me-wbtns">
         {c?.usdgFaucet && <button className="me-faucet" onClick={() => faucet()} disabled={busy}><img src={ART.coin} alt="" />{busy ? t('stConfirm') : t('getUsdg')}</button>}
@@ -301,7 +300,7 @@ function LaunchCard({ tk, now, fees, feesLoading, desktop, claimState, busy, onC
       <div className="me-fees">
         <div className="f">
           <span className="k">{t('feesToClaim')}</span>
-          <b>{feesLoading && !f ? '…' : u > 0n || tok > 0n ? `${fmtRaw(u, 6)} USDG` : t('noFees')}</b>
+          <b className={u > 0n || tok > 0n ? '' : 'none'}>{feesLoading && !f ? '…' : u > 0n || tok > 0n ? `${fmtRaw(u, 6)} USDG` : t('noFees')}</b>
           {tok > 0n && <span className="s">{t('feesPlusTok', { amt: fmtRaw(tok, 18, true), sym: tk.symbol })}</span>}
           <span className="s">{t('feesEarned', { n: creatorEarned(tk).toLocaleString('en-US', { maximumFractionDigits: 2 }) })}</span>
         </div>
