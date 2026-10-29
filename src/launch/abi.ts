@@ -52,3 +52,19 @@ export const routerAbi = parseAbi([
 export const pmAbi = parseAbi([
   'function extsload(bytes32 startSlot, uint256 nSlots) view returns (bytes32[])',
 ]);
+
+export const curveFeesAbi = parseAbi([
+  'function creatorFeesOf(address) view returns (uint256)',
+  'function claimCreatorFees(address to) returns (uint256)',
+  'error NothingToClaim()',
+  'error ZeroAddress()',
+]);
+
+export const lockerAbi = parseAbi([
+  'function owed(address account, address currency) view returns (uint256)',
+  'function collectFees(address token) returns (uint256 tokenFees, uint256 usdgFees)',
+  'function claim(address currency, address to) returns (uint256)',
+  'error NothingToClaim()',
+  'error NotMigrated()',
+  'error ZeroAddress()',
+]);
