@@ -4,7 +4,7 @@
  */
 
 /** Our Blob store. Only images on this host (under tokens/, named by hash) are shown. */
-export const TOKEN_IMAGE_HOST = import.meta.env.VITE_TOKEN_IMAGE_HOST || '';
+export const TOKEN_IMAGE_HOST = import.meta.env.VITE_TOKEN_IMAGE_HOST || 'zvufsqlkcq7kyfnm.public.blob.vercel-storage.com';
 
 export const IMAGE_SIDE = 512;
 export const MAX_INPUT_BYTES = 10 * 1024 * 1024;
