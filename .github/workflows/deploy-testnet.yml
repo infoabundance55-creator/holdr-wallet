@@ -4,6 +4,8 @@ name: Deploy contracts to testnet
 # type DEPLOY. Runs from the `contracts` branch on Robinhood Chain testnet (46630) with the
 # DEPLOYER_KEY secret.
 #   deploy: deploy the launchpad, commit addresses to contracts/deployments/46630.json
+#   router: deploy the swap router the website uses for graduated tokens (testnet has no
+#           Uniswap Universal Router), add it to contracts/deployments/46630.json as swapRouter
 #   smoke:  walk through the whole flow with the deployer wallet (launch, buy, sell, graduate,
 #           Uniswap trades, fees) and commit a report to contracts/deployments/46630-smoke.md
 on:
@@ -12,7 +14,7 @@ on:
       action:
         description: What to do
         type: choice
-        options: [smoke, deploy]
+        options: [smoke, deploy, router]
         default: smoke
       confirm:
         description: Type DEPLOY to confirm
@@ -76,6 +78,42 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add contracts/deployments/46630.json
           git commit -m "Testnet deployment addresses (run ${{ github.run_id }})"
+          git push origin HEAD:contracts
+
+  router:
+    if: github.event.inputs.confirm == 'DEPLOY' && github.event.inputs.action == 'router'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: contracts
+          submodules: recursive
+      - name: Install Foundry v1.5.1
+        run: curl -sSL https://github.com/foundry-rs/foundry/releases/download/v1.5.1/foundry_v1.5.1_linux_amd64.tar.gz | sudo tar xz -C /usr/local/bin forge cast
+      - name: Test
+        working-directory: contracts
+        run: forge test --match-path test/launchpad/TestnetRouter.t.sol
+      - name: Deploy router
+        working-directory: contracts
+        env:
+          DEPLOYER_KEY: ${{ secrets.DEPLOYER_KEY }}
+        run: |
+          if [ -z "$DEPLOYER_KEY" ]; then echo "::error::DEPLOYER_KEY secret is missing"; exit 1; fi
+          forge script script/testnet/DeployRouter.s.sol --rpc-url "$RPC" --broadcast --slow \
+            --private-key "0x${DEPLOYER_KEY#0x}"
+          {
+            echo '### Swap router deployed (Robinhood Chain testnet)'
+            echo '```json'
+            cat deployments/46630.json
+            echo
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Save address to the repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add contracts/deployments/46630.json
+          git commit -m "Testnet swap router address (run ${{ github.run_id }})"
           git push origin HEAD:contracts
 
   smoke:
