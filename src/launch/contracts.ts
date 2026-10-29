@@ -20,11 +20,12 @@ const env = import.meta.env;
 
 export const LAUNCH: Partial<Record<NetworkId, LaunchContracts>> = {
   testnet: {
-    factory: '0x662e5A937C762Cc624e7fCdaC0Bc3992F8e72Fa9',
-    locker: '0x62ba0bdd2cE287854907677Ef0577FF2BB313faf',
-    hook: '0x5aeA1537Dd78ba39A09BF65d48Cc41862e42e000',
-    poolManager: '0xF8d1C31c9C9f4f8327FC0AE25d6f163489cCC7F3',
-    usdg: '0xf820a6e153452B6699Ce9BD794C78E644284F033',
+    // Env overrides exist for local end-to-end tests against anvil; production uses the defaults.
+    factory: env.VITE_LAUNCH_FACTORY_TESTNET || '0x662e5A937C762Cc624e7fCdaC0Bc3992F8e72Fa9',
+    locker: env.VITE_LAUNCH_LOCKER_TESTNET || '0x62ba0bdd2cE287854907677Ef0577FF2BB313faf',
+    hook: env.VITE_LAUNCH_HOOK_TESTNET || '0x5aeA1537Dd78ba39A09BF65d48Cc41862e42e000',
+    poolManager: env.VITE_LAUNCH_PM_TESTNET || '0xF8d1C31c9C9f4f8327FC0AE25d6f163489cCC7F3',
+    usdg: env.VITE_LAUNCH_USDG_TESTNET || '0xf820a6e153452B6699Ce9BD794C78E644284F033',
     usdgDecimals: 6,
     usdgFaucet: true,
     fromBlock: Number(env.VITE_LAUNCH_FROM_BLOCK_TESTNET || 144_070_082), // factory deploy block

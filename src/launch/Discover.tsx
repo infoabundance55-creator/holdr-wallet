@@ -350,7 +350,7 @@ function TokenTable({ list, now, exclude }: { list: LaunchToken[]; now: number; 
                 <td>
                   <button className="lp-cell" onClick={() => nav.push({ name: 'token', token: tk.token })}>
                     <TokenAvatar address={tk.token} symbol={tk.symbol} uri={tk.metadataURI} size={36} />
-                    <span className="nm"><b>{tk.name} <span>${tk.symbol}</span></b><span>{tk.createdAt ? t('agoShort', { x: ago(t, tk.createdAt, now) }) : '—'}</span></span>
+                    <span className="nm"><b>{tk.name} <span>${tk.symbol}</span></b><span>{tk.createdAt ? (now - tk.createdAt < 60 ? t('agoNow') : t('agoShort', { x: ago(t, tk.createdAt, now) })) : '—'}</span></span>
                   </button>
                 </td>
                 <td className="l" style={{ color: 'var(--text-3)', fontSize: 13 }}>{shortAddr(tk.creator, 5, 3)}</td>

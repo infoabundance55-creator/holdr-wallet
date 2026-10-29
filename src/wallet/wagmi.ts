@@ -41,6 +41,8 @@ export const wagmiConfig = createConfig({
     [CHAINS.testnet.id]: http(NETWORKS.testnet.rpc, { batch: false }),
     [CHAINS.mainnet.id]: http(NETWORKS.mainnet.rpc, { batch: false }),
   },
+  // No multicall batching: every read is its own eth_call, so nothing depends on Multicall3 being deployed.
+  batch: { multicall: false },
   ssr: false,
 });
 

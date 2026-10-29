@@ -204,7 +204,8 @@ export function useTrader(ix: LaunchIndexer | null) {
 
   const trade = useCallback(async ({ tk, side, amount, quote, slipBps, points }: TradeArgs) => {
     if (!c || !address) return;
-    const deadline = BigInt(Math.floor(Date.now() / 1000) + DEADLINE_SEC);
+    // Chain time can run ahead of this device's clock; count the deadline from whichever is later.
+    const deadline = BigInt(Math.floor(Math.max(Date.now() / 1000, ix?.latestTime ?? 0)) + DEADLINE_SEC);
     const minOut = withSlippage(quote.out, slipBps);
     try {
       await ensureChain();

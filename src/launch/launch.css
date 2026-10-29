@@ -49,7 +49,8 @@
 .lp-hot .r1 { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .lp-hot .rank { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--muted); }
 .lp-hot .sym { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lp-hot .r2 { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; font-family: var(--mono); font-size: 13px; font-weight: 700; }
+.lp-hot .r2 { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; font-family: var(--mono); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.lp-hot .r2 svg { flex-shrink: 1; min-width: 24px; }
 
 /* Banner (static for now; carousel later) */
 .lp-banner { position: relative; margin: 18px 16px 0; padding: 22px 20px 0; border-radius: 24px; background: var(--indigo); color: #fff; overflow: hidden; display: flex; flex-direction: column; gap: 12px; }
@@ -382,7 +383,7 @@
   .lp-statgrid b { font-size: 26px; }
   .lp-statnote { display: none; }
   .lp-grads { padding-top: 36px; }
-  .lp-grads .lp-scroll { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; overflow: visible; }
+  .lp-grads .lp-scroll { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; overflow: visible; }
   .lp-gcard { width: auto; padding: 20px; border-radius: 22px; gap: 18px; }
   .lp-all { padding-top: 36px; }
   .lp-alltools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-bottom: 16px; }
@@ -394,7 +395,7 @@
   .lp-how .n { width: 40px; height: 40px; font-size: 15px; }
   .lp-how b { font-size: 18px; }
   .lp-how span.s { font-size: 14px; line-height: 1.45; }
-  .lp-footer { margin: 48px -32px 0; padding: 28px max(32px, calc((100vw - 1280px) / 2 + 32px)); flex-direction: row; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+  .lp-footer { margin: 48px 0 0; padding: 28px 0; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
   .lp-footer .brand { display: block; }
   .lp-footer p { margin-left: auto; max-width: 520px; }
 
@@ -412,7 +413,7 @@
   .td-headcard .td-chip.round { width: 32px; }
   .td-headcard .td-price { flex-direction: column; align-items: flex-end; gap: 4px; }
   .td-headcard .td-price .p { font-size: 34px; }
-  .td.desk .td-stats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .td.desk .td-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .td.desk .td-stats > div { padding: 14px 18px; gap: 6px; }
   .td.desk .td-stats b { font-size: 19px; }
   .td.desk .td-chart { padding: 18px 20px; gap: 14px; }

@@ -156,7 +156,7 @@ a { color: var(--gold); }
 .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 440px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--nav-bg); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 5; }
 .bottom-nav button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 60px; border: 0; background: transparent; color: var(--text-3); font-size: 12px; font-weight: 700; }
 .bottom-nav button[aria-current="page"] { color: var(--gold); }
-.bottom-nav .soon { position: absolute; top: 5px; left: calc(50% + 6px); padding: 1px 5px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line-2); font-family: var(--mono); font-size: 9px; color: var(--text-3); }
+.bottom-nav .soon { position: absolute; top: 5px; left: calc(50% + 6px); padding: 1px 5px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line-2); font-family: var(--mono); font-size: 9px; color: var(--text-3); white-space: nowrap; }
 
 /* Words */
 .words { margin: 0; padding: 16px; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; background: var(--surface); border-radius: 18px; }

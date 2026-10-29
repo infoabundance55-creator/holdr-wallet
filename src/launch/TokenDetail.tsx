@@ -389,7 +389,7 @@ function Chart({ data, width, height, volume: showVol, mode, interval, tk }: {
     <svg className="td-svg" width={width} height={H} viewBox={`0 0 ${width} ${H}`} role="img" aria-label={desc}>
       {ticks.map((v) => <line key={v} x1={0} x2={plotW} y1={y(v)} y2={y(v)} stroke="#1A2133" />)}
       <line x1={0} x2={plotW} y1={height} y2={height} stroke="#262E45" />
-      {ticks.map((v) => <text key={'l' + v} x={width - 2} y={y(v) + 4} textAnchor="end" fill="#8C95B0" fontFamily="JetBrains Mono, monospace" fontSize={10}>{axisNum(v, hi)}</text>)}
+      {ticks.filter((v) => Math.abs(y(v) - y(last.c)) > 14).map((v) => <text key={'l' + v} x={width - 2} y={y(v) + 4} textAnchor="end" fill="#8C95B0" fontFamily="JetBrains Mono, monospace" fontSize={10}>{axisNum(v, hi)}</text>)}
       {gradIdx >= 0 && (
         <g>
           <line x1={slot * gradIdx + slot / 2} x2={slot * gradIdx + slot / 2} y1={4} y2={height} stroke="#2EDB82" strokeDasharray="3 4" opacity={0.7} />

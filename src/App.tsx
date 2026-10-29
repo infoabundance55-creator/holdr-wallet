@@ -105,7 +105,7 @@ function Layout({ tab, mobileTopbar, children }: { tab: Tab | null; mobileTopbar
             {TABS.map(([id, icon, label]) => (
               <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => nav.tab(id)}>
                 <Icon name={icon} size={22} />{t(label)}
-                {id === 'points' && <span className="soon" aria-hidden="true">{t('soon')}</span>}
+                {id === 'points' && <span className="soon" aria-hidden="true">SOON</span>}
               </button>
             ))}
           </nav>
