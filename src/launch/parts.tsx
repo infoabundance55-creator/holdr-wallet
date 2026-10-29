@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Key } from '../i18n';
 import { elapsed, pct } from './fmt';
+import { isTokenImageUrl } from './tokenImage';
 
 export interface TokenMeta {
   description?: string;
@@ -10,21 +12,21 @@ export interface TokenMeta {
 }
 
 /**
- * Reads inline metadata (data:application/json). Remote URIs (ipfs://, https://) are resolved
- * once the upload service lands; until then they fall back to the letter avatar.
+ * Reads inline metadata (data:application/json). Images may be inline (data:image/...) or a URL from
+ * our own Blob store (see tokenImage.ts); anything else falls back to the letter avatar.
  */
 export function parseMeta(uri: string): TokenMeta {
   try {
     const m = /^data:application\/json(;base64)?,(.*)$/s.exec(uri);
     if (!m) return {};
-    const json = m[1] ? atob(m[2]) : decodeURIComponent(m[2]);
+    const json = m[1] ? new TextDecoder().decode(Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0))) : decodeURIComponent(m[2]);
     const o = JSON.parse(json) as Record<string, unknown>;
     const str = (v: unknown) => (typeof v === 'string' && v.length < 2000 ? v : undefined);
     const image = typeof o.image === 'string' && o.image.length < 200_000 ? o.image : undefined;
     return {
       description: str(o.description),
-      // Only inline images: the page CSP allows data: and same-origin images.
-      image: image && /^data:image\/(png|jpeg|gif|webp);base64,/.test(image) ? image : undefined,
+      // Inline images, or images uploaded through /api/upload-image (the CSP allows that host only).
+      image: image && (/^data:image\/(png|jpeg|gif|webp);base64,/.test(image) || isTokenImageUrl(image)) ? image : undefined,
       website: safeUrl(str(o.website)),
       x: safeUrl(str(o.x) ?? str(o.twitter)),
       telegram: safeUrl(str(o.telegram)),
@@ -49,11 +51,13 @@ const AVATAR_COLORS: [string, string][] = [
   ['#1A2133', '#C9CBFF'], ['#26163A', '#D9B8FF'],
 ];
 
-/** Round token image, or a letter avatar when the token has no inline image. */
+/** Round token image, or a letter avatar when the token has no usable image. */
 export function TokenAvatar({ address, symbol, uri, size = 48 }: { address: string; symbol: string; uri: string; size?: number }) {
   const meta = parseMeta(uri);
-  if (meta.image) {
-    return <img src={meta.image} alt="" width={size} height={size} style={{ flex: 'none', borderRadius: 999, objectFit: 'cover', background: '#1A2133' }} />;
+  const [broken, setBroken] = useState<string>();
+  if (meta.image && broken !== meta.image) {
+    const src = meta.image;
+    return <img src={src} alt="" width={size} height={size} loading="lazy" decoding="async" onError={() => setBroken(src)} style={{ flex: 'none', borderRadius: 999, objectFit: 'cover', background: '#1A2133' }} />;
   }
   const [bg, fg] = AVATAR_COLORS[parseInt(address.slice(-4), 16) % AVATAR_COLORS.length];
   const letters = [...symbol.replace(/[^\p{L}\p{N}]/gu, '')].slice(0, 2).join('').toUpperCase() || '?';

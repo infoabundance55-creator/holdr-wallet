@@ -183,6 +183,12 @@ const zh = {
   actBuy: '买入 {amt} {sym}，花 {usdg} USDG', actSell: '卖出 {amt} {sym}，得到 {usdg} USDG', actLaunch: '发了 {name}（${sym}）',
   actClaim: '领取 {amt} {cur} 手续费', tagBuy: '买', tagSell: '卖', tagNew: '发币', tagFee: '手续费',
   meLoading: '正在读取链上数据…',
+  // token image (stage 3b-1)
+  imgPick: '上传币图片', imgChange: '换一张图片', imgRemove: '移除',
+  imgHint: 'PNG、JPG、WebP 或 GIF，最大 10 MB。会裁成正方形，缩成 512 × 512。',
+  imgUploading: '上传中…', imgDone: '已上传',
+  imgErrType: '只支持 PNG、JPG、WebP 或 GIF。', imgErrSize: '图片太大，请换一张 10 MB 以内的。',
+  imgErrDecode: '读不了这张图片，请换一张。', imgErrUpload: '上传失败，请重试。', imgErrNetwork: '网络有问题，请检查后重试。',
 };
 
 export type Key = keyof typeof zh;
@@ -363,6 +369,11 @@ const en: Record<Key, string> = {
   actBuy: 'Bought {amt} {sym} for {usdg} USDG', actSell: 'Sold {amt} {sym} for {usdg} USDG', actLaunch: 'Launched {name} (${sym})',
   actClaim: 'Claimed {amt} {cur} in fees', tagBuy: 'BUY', tagSell: 'SELL', tagNew: 'NEW', tagFee: 'FEE',
   meLoading: 'Reading the chain…',
+  imgPick: 'Upload token image', imgChange: 'Change image', imgRemove: 'Remove',
+  imgHint: 'PNG, JPG, WebP or GIF, up to 10 MB. Cropped to a square and resized to 512 × 512.',
+  imgUploading: 'Uploading…', imgDone: 'Uploaded',
+  imgErrType: 'Use a PNG, JPG, WebP or GIF.', imgErrSize: 'That image is too big. Pick one under 10 MB.',
+  imgErrDecode: "We couldn't read that image. Try another one.", imgErrUpload: 'Upload failed. Try again.', imgErrNetwork: 'Network problem. Check your connection and try again.',
 };
 
 export const DICTS: Record<Lang, Record<Key, string>> = { zh, en };
