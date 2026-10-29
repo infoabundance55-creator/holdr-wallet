@@ -28,7 +28,7 @@ function token(over: Partial<LaunchToken> = {}): LaunchToken {
     token: `0x${seq.toString(16).padStart(40, '0')}`, pool: `0x${(seq + 0x1000).toString(16).padStart(40, '0')}`,
     creator: '0x00000000000000000000000000000000000000aa', name: `Token ${seq}`, symbol: `T${seq}`, metadataURI: '',
     createdBlock: seq, createdAt: 1_000, params: PARAMS, trades: [], graduated: false, graduatedAt: null,
-    balances: new Map(), burned: 0n, ...over,
+    balances: new Map(), burned: 0n, poolId: '', ...over,
   };
 }
 
@@ -37,7 +37,7 @@ function trade(time: number, real: bigint, isBuy = true, usdg = 100n * 10n ** 6n
   const x = PARAMS.virtualUsdg + real;
   const k = PARAMS.virtualUsdg * PARAMS.initialVirtualTokens;
   const sold = PARAMS.initialVirtualTokens - k / x;
-  return { block: time, logIndex: 0, time, tx: '0x', trader: '0x00000000000000000000000000000000000000bb', isBuy, usdg, tokens: 0n, fee: 0n, surcharge: 0n, realAfter: real, soldAfter: sold };
+  return { block: time, logIndex: 0, time, tx: '0x', trader: '0x00000000000000000000000000000000000000bb', isBuy, usdg, tokens: 0n, fee: 0n, surcharge: 0n, realAfter: real, soldAfter: sold, venue: 'curve', price: priceAt(PARAMS, real, sold) };
 }
 
 describe('curve math', () => {
@@ -133,5 +133,46 @@ describe('metadata', () => {
     expect(m.x).toBeUndefined();
     expect(m.image).toBeUndefined();
     expect(parseMeta('ipfs://holdr-smoke-test')).toEqual({});
+  });
+});
+
+describe('trading helpers', () => {
+  it('estimates trade points with daily tiers and the $5 minimum', async () => {
+    const { tradePoints, dayPoints, withSlippage, toInput, impactPct, fmtRaw } = await import('./trade');
+    expect(tradePoints(100, 0)).toBe(1_000);
+    expect(tradePoints(4.99, 0)).toBe(0);
+    expect(dayPoints(2_000)).toBe(15_000);
+    expect(dayPoints(20_000)).toBe(80_000); // tier table: 10,000 + 45,000 + 25,000 (the plan example says 82,500)
+    expect(tradePoints(1_000, 500)).toBe(dayPoints(1_500) - dayPoints(500));
+    expect(withSlippage(1_000_000n, 200)).toBe(980_000n);
+    expect(toInput(1_234_500_000n, 6)).toBe('1234.5');
+    expect(toInput(10n ** 18n / 3n, 18, 4)).toBe('0.3333');
+    expect(impactPct(1, 1.02, 1, true)).toBeCloseTo(2, 6);
+    expect(impactPct(1, 0.97, 1, false)).toBeCloseTo(3, 6);
+    expect(fmtRaw(2_150_070n * 10n ** 18n, 18, true)).toBe('2.15M');
+    expect(fmtRaw(2_150_070n * 10n ** 18n, 18)).toBe('2,150,070');
+  });
+
+  it('reads Uniswap v4 prices and pool ids', async () => {
+    const { poolKeyFor, poolId, priceFromSqrt, tokenIs0 } = await import('./v4');
+    const usdg = '0xf820a6e153452B6699Ce9BD794C78E644284F033';
+    const tok = '0x00000000000000000000000000000000000000aa';
+    const key = poolKeyFor(tok, usdg, '0x5aeA1537Dd78ba39A09BF65d48Cc41862e42e000');
+    expect(tokenIs0(key, tok)).toBe(true);
+    expect(key.fee).toBe(10_000);
+    expect(poolId(key)).toMatch(/^0x[0-9a-f]{64}$/);
+    // $0.00005 per token: raw price = 5e-5 * 1e6 / 1e18 USDG units per token unit
+    const raw = 0.00005 / 1e12;
+    const sqrt = BigInt(Math.round(Math.sqrt(raw) * 2 ** 96));
+    expect(priceFromSqrt(sqrt, true)).toBeCloseTo(0.00005, 9);
+    const sqrtInv = BigInt(Math.round(Math.sqrt(1 / raw) * 2 ** 96));
+    expect(priceFromSqrt(sqrtInv, false)).toBeCloseTo(0.00005, 9);
+  });
+
+  it('uses the Uniswap price after graduation', () => {
+    const t = token({ graduated: true, trades: [trade(10, G)] });
+    t.trades.push({ ...t.trades[0], time: 20, venue: 'uni', price: 0.0001 });
+    expect(currentPrice(t)).toBe(0.0001);
+    expect(progress(t)).toBe(1);
   });
 });

@@ -1,5 +1,5 @@
 import type { Key } from '../i18n';
-import { elapsed } from './fmt';
+import { elapsed, pct } from './fmt';
 
 export interface TokenMeta {
   description?: string;
@@ -45,30 +45,32 @@ function safeUrl(u?: string): string | undefined {
 }
 
 const AVATAR_COLORS: [string, string][] = [
-  ['#ECEBFF', '#2B2BD9'], ['#FFF4D6', '#8A5A00'], ['#E2F6EA', '#167A46'], ['#FDE7DF', '#B4320A'],
-  ['#E6F0FF', '#1D4ED8'], ['#F6E8FF', '#7E22CE'],
+  ['#2B2BD9', '#FFFFFF'], ['#3A2A06', '#FFC94D'], ['#0F2A1C', '#2EDB82'], ['#2A1212', '#FF8A8A'],
+  ['#1A2133', '#C9CBFF'], ['#26163A', '#D9B8FF'],
 ];
 
+/** Round token image, or a letter avatar when the token has no inline image. */
 export function TokenAvatar({ address, symbol, uri, size = 48 }: { address: string; symbol: string; uri: string; size?: number }) {
   const meta = parseMeta(uri);
-  const radius = Math.round(size * 0.27);
   if (meta.image) {
-    return <img src={meta.image} alt="" width={size} height={size} style={{ flex: 'none', borderRadius: radius, objectFit: 'cover', background: '#ECEBFF' }} />;
+    return <img src={meta.image} alt="" width={size} height={size} style={{ flex: 'none', borderRadius: 999, objectFit: 'cover', background: '#1A2133' }} />;
   }
   const [bg, fg] = AVATAR_COLORS[parseInt(address.slice(-4), 16) % AVATAR_COLORS.length];
   const letters = [...symbol.replace(/[^\p{L}\p{N}]/gu, '')].slice(0, 2).join('').toUpperCase() || '?';
   return (
-    <span aria-hidden="true" style={{ flex: 'none', width: size, height: size, borderRadius: radius, background: bg, color: fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: Math.round(size * 0.36), letterSpacing: '-0.02em' }}>
+    <span aria-hidden="true" style={{ flex: 'none', width: size, height: size, borderRadius: 999, background: bg, color: fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: Math.round(size * (letters.length > 1 ? 0.34 : 0.46)), letterSpacing: '-0.02em' }}>
       {letters}
     </span>
   );
 }
 
-export function Bar({ value, height = 6, color = 'var(--indigo)', label }: { value: number; height?: number; color?: string; label?: string }) {
-  const pctValue = Math.round(Math.max(0, Math.min(1, value)) * 100);
+/** Progress bar. Tone follows the design: grey below 80%, gold from 80%, green when graduated. */
+export function Bar({ value, height = 6, done, label, tone }: { value: number; height?: number; done?: boolean; label?: string; tone?: 'near' | 'done' | 'grey' }) {
+  const pctValue = Math.max(0, Math.min(1, value)) * 100;
+  const cls = tone ?? (done ? 'done' : pctValue >= 80 ? 'near' : 'grey');
   return (
-    <div role="progressbar" aria-valuenow={pctValue} aria-valuemin={0} aria-valuemax={100} aria-label={label} className="lp-bar" style={{ height }}>
-      <i style={{ width: `${pctValue}%`, background: color }} />
+    <div role="progressbar" aria-valuenow={Math.round(pctValue)} aria-valuemin={0} aria-valuemax={100} aria-label={label} className={'lp-bar ' + cls} style={{ height }}>
+      <i style={{ width: `${pctValue}%` }} />
     </div>
   );
 }
@@ -84,5 +86,45 @@ export function ago(t: T, fromSec: number, nowSec: number, suffix = false): stri
 
 /** Green / red / neutral class for a percent change. */
 export function deltaClass(n: number | null): string {
-  return n == null || n === 0 ? 'lp-flat' : n > 0 ? 'lp-up' : 'lp-down';
+  return n == null || Math.abs(n) < 0.05 ? 'lp-flat' : n > 0 ? 'lp-up' : 'lp-down';
+}
+
+/** Percent change with an arrow, so up and down never rely on colour alone: ▲ +55.7% / ▼ −11.6%. */
+export function Delta({ n, className = '' }: { n: number | null; className?: string }) {
+  const cls = deltaClass(n);
+  const arrow = cls === 'lp-up' ? '▲ ' : cls === 'lp-down' ? '▼ ' : '';
+  return <span className={(className + ' ' + cls).trim()}>{arrow}{cls === 'lp-flat' && n != null ? '0.0%' : pct(n)}</span>;
+}
+
+/** Tiny 24h price line for trending cards. */
+export function Spark({ values, up, w = 54, h = 22 }: { values: number[]; up: boolean | null; w?: number; h?: number }) {
+  const lo = Math.min(...values), hi = Math.max(...values);
+  const span = hi - lo || 1;
+  const pts = values.map((v, i) => `${((i / (values.length - 1)) * (w - 2) + 1).toFixed(1)},${(h - 2 - ((v - lo) / span) * (h - 4)).toFixed(1)}`).join(' ');
+  const color = up == null ? '#8C95B0' : up ? '#2EDB82' : '#FF6464';
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" style={{ flex: 'none' }}>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** The four Holdr characters (pixel art, transparent). Moon Frog keeps its current look (owner, 2026-10-29). */
+export const ART = {
+  raccoon: '/art/raccoon.webp',
+  frog: '/art/frog.webp',
+  bull: '/art/bull.webp',
+  anon: '/art/anon.webp',
+  coin: '/art/coin.png',
+} as const;
+
+export function Cast({ height = 92 }: { height?: number }) {
+  return (
+    <div className="lp-cast">
+      <img src={ART.raccoon} alt="Degen Raccoon" style={{ height: height * 0.94 }} />
+      <img src={ART.frog} alt="Moon Frog" style={{ height }} />
+      <img src={ART.bull} alt="Laser Bull" style={{ height: height * 0.97 }} />
+      <img src={ART.anon} alt="The Anon" style={{ height: height * 1.06 }} />
+    </div>
+  );
 }

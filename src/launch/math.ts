@@ -22,8 +22,13 @@ export interface TradeEv {
   tokens: bigint;
   fee: bigint;
   surcharge: bigint;
+  /** Curve state after the trade (for Uniswap trades: the final curve state). */
   realAfter: bigint;
   soldAfter: bigint;
+  /** 'curve' = bonding curve, 'uni' = the Uniswap v4 pool after graduation. */
+  venue: 'curve' | 'uni';
+  /** Spot price in USDG per whole token right after the trade. */
+  price: number;
 }
 
 export interface LaunchToken {
@@ -39,10 +44,14 @@ export interface LaunchToken {
   trades: TradeEv[]; // oldest first
   graduated: boolean;
   graduatedAt: number | null;
+  /** Transaction that graduated the token. */
+  gradTx?: string;
   /** Lower-cased holder => balance, from Transfer events. */
   balances: Map<string, bigint>;
   /** Tokens burned at graduation (unsold curve tokens). */
   burned: bigint;
+  /** Id of the official Uniswap v4 pool (lower-case), used once the token graduates. */
+  poolId: string;
 }
 
 const USDG = 1e6;
@@ -55,26 +64,35 @@ export function priceAt(p: PoolParams, realUsdg: bigint, tokensSold: bigint): nu
   return y > 0 ? x / y : 0;
 }
 
+/** Curve state after the last curve trade. */
 export function lastState(t: LaunchToken): { real: bigint; sold: bigint } {
-  const last = t.trades[t.trades.length - 1];
-  return last ? { real: last.realAfter, sold: last.soldAfter } : { real: 0n, sold: 0n };
+  for (let i = t.trades.length - 1; i >= 0; i--) {
+    const tr = t.trades[i];
+    if (tr.venue === 'curve') return { real: tr.realAfter, sold: tr.soldAfter };
+  }
+  return { real: 0n, sold: 0n };
 }
 
+export function launchPrice(t: LaunchToken): number {
+  return t.params ? priceAt(t.params, 0n, 0n) : 0;
+}
+
+/** Price after the last trade (curve or Uniswap); the launch price before any trade. */
 export function currentPrice(t: LaunchToken): number {
   if (!t.params) return 0;
-  const { real, sold } = lastState(t);
-  return priceAt(t.params, real, sold);
+  const last = t.trades[t.trades.length - 1];
+  return last ? last.price : launchPrice(t);
 }
 
 /** Price right after the last trade at or before `time`; the launch price if none. */
 export function priceAtTime(t: LaunchToken, time: number): number {
   if (!t.params) return 0;
-  let real = 0n, sold = 0n;
+  let p = launchPrice(t);
   for (const tr of t.trades) {
     if (tr.time > time) break;
-    real = tr.realAfter; sold = tr.soldAfter;
+    p = tr.price;
   }
-  return priceAt(t.params, real, sold);
+  return p;
 }
 
 export function supplyOf(t: LaunchToken): bigint {
@@ -153,7 +171,7 @@ export function applyTransfer(balances: Map<string, bigint>, from: string, to: s
   balances.set(t, (balances.get(t) ?? 0n) + value);
 }
 
-export interface Candle { t: number; o: number; h: number; l: number; c: number }
+export interface Candle { t: number; o: number; h: number; l: number; c: number; v: number }
 
 /** Candles of `interval` seconds, last `count` buckets ending at `now`. Empty buckets carry the close forward. */
 export function candles(t: LaunchToken, interval: number, now: number, count = 36): Candle[] {
@@ -165,10 +183,11 @@ export function candles(t: LaunchToken, interval: number, now: number, count = 3
   if (i < 0) i = t.trades.length;
   const out: Candle[] = [];
   for (let b = start; b <= end; b += interval) {
-    const c: Candle = { t: b, o: price, h: price, l: price, c: price };
+    const c: Candle = { t: b, o: price, h: price, l: price, c: price, v: 0 };
     while (i < t.trades.length && t.trades[i].time < b + interval) {
       const tr = t.trades[i++];
-      const p = priceAt(t.params, tr.realAfter, tr.soldAfter);
+      const p = tr.price;
+      c.v += Number(tr.usdg) / USDG;
       c.h = Math.max(c.h, p); c.l = Math.min(c.l, p); c.c = p;
     }
     price = c.c;
@@ -177,7 +196,7 @@ export function candles(t: LaunchToken, interval: number, now: number, count = 3
   return out;
 }
 
-export type Filter = 'trending' | 'new' | 'almost' | 'graduated';
+export type Filter = 'trending' | 'new' | 'almost' | 'graduated' | 'mcap';
 
 export function sortTokens(list: LaunchToken[], f: Filter, now: number): LaunchToken[] {
   const live = list.filter((t) => t.params);
@@ -188,6 +207,8 @@ export function sortTokens(list: LaunchToken[], f: Filter, now: number): LaunchT
       return live.filter((t) => !t.graduated).sort((a, b) => progress(b) - progress(a));
     case 'graduated':
       return live.filter((t) => t.graduated).sort((a, b) => (b.graduatedAt ?? 0) - (a.graduatedAt ?? 0));
+    case 'mcap':
+      return [...live].sort((a, b) => marketCap(b) - marketCap(a));
     default:
       return [...live].sort((a, b) => volume(b, now) - volume(a, now) || marketCap(b) - marketCap(a) || b.createdBlock - a.createdBlock);
   }
@@ -204,3 +225,35 @@ export function almostGraduating(list: LaunchToken[], min = 0.5, max = 5): Launc
   return list.filter((t) => t.params && !t.graduated && progress(t) >= min).sort((a, b) => progress(b) - progress(a)).slice(0, max);
 }
 
+
+/** Creator's 70% share of all fees so far, in USDG (Uniswap fees paid in tokens valued at the trade price). */
+export function creatorEarned(t: LaunchToken): number {
+  if (!t.params) return 0;
+  let fees = 0;
+  for (const tr of t.trades) fees += Number(tr.fee) / USDG;
+  return fees * (t.params.creatorShareBps / 10_000);
+}
+
+/** Top `n` tokens by 24h volume, then market cap. */
+export function trending(list: LaunchToken[], now: number, n = 10): LaunchToken[] {
+  return sortTokens(list, 'trending', now).slice(0, n);
+}
+
+/** Sparkline of the last 24h: `points` evenly spaced prices. */
+export function spark(t: LaunchToken, now: number, points = 12): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < points; i++) out.push(priceAtTime(t, now - 86_400 + (86_400 * i) / (points - 1)));
+  return out;
+}
+
+export interface PlatformStats { launched: number; graduated: number; vol24h: number; creatorFees: number }
+
+export function platformStats(list: LaunchToken[], now: number): PlatformStats {
+  const live = list.filter((t) => t.params);
+  return {
+    launched: live.length,
+    graduated: live.filter((t) => t.graduated).length,
+    vol24h: live.reduce((s, t) => s + volume(t, now), 0),
+    creatorFees: live.reduce((s, t) => s + creatorEarned(t), 0),
+  };
+}

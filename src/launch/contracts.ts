@@ -12,6 +12,8 @@ export interface LaunchContracts {
   usdgFaucet: boolean;
   /** First block to scan for launches (the factory's deploy block). */
   fromBlock: number;
+  /** Swap router for graduated tokens. Testnet: HoldrTestnetRouter (no Universal Router there). */
+  router?: string;
 }
 
 const env = import.meta.env;
@@ -26,6 +28,7 @@ export const LAUNCH: Partial<Record<NetworkId, LaunchContracts>> = {
     usdgDecimals: 6,
     usdgFaucet: true,
     fromBlock: Number(env.VITE_LAUNCH_FROM_BLOCK_TESTNET || 144_070_082), // factory deploy block
+    router: env.VITE_SWAP_ROUTER_TESTNET || '0xa3877fd7030a063cBB18c948a7153cF245F20AeA', // HoldrTestnetRouter
   },
 };
 
@@ -57,6 +60,14 @@ export const POOL_ABI = [
   'function feeBps() view returns (uint16)',
   'function creatorShareBps() view returns (uint16)',
   'function firstBuyMaxTokens() view returns (uint256)',
+];
+
+export const PM_ABI = [
+  'event Swap(bytes32 indexed id, address indexed sender, int128 amount0, int128 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick, uint24 fee)',
+];
+
+export const ROUTER_EVENTS_ABI = [
+  'event Swapped(address indexed trader, bytes32 indexed poolId, bool zeroForOne, uint256 amountIn, uint256 amountOut)',
 ];
 
 export const ERC20_ABI = [

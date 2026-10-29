@@ -4,8 +4,8 @@
   "description": "Fair-launch tokens on Robinhood Chain.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F6F5FF",
-  "theme_color": "#2B2BD9",
+  "background_color": "#0A0D16",
+  "theme_color": "#0A0D16",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]

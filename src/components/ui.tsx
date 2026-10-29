@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 
 const PATHS: Record<string, ReactNode> = {
   back: <path d="M15 18l-6-6 6-6" />,
+  close: <path d="M6 6l12 12M18 6L6 18" />,
   down: <path d="M6 9l6 6 6-6" />,
   right: <path d="M9 6l6 6-6 6" />,
   receive: <><path d="M12 4v13M6 11l6 6 6-6" /><path d="M5 20h14" /></>,
@@ -25,6 +26,7 @@ const PATHS: Record<string, ReactNode> = {
   lock: <><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></>,
   refresh: <><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
+  plusCircle: <><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></>,
   search: <><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></>,
   rocket: <><path d="M12 15l-3-3c1.5-4.5 4.5-7.5 10-8 -.5 5.5-3.5 8.5-8 10z" /><path d="M9 12H5l2-4h4M12 15v4l4-2v-4" /><path d="M6 17c-1 1-1.5 3-1.5 3s2-.5 3-1.5" /></>,
   sparkle: <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6" />,
@@ -59,7 +61,7 @@ export function Logo() {
       <div style={{ width: 32, height: 32, borderRadius: 9, background: 'var(--indigo)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Mark size={22} />
       </div>
-      <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em' }}>holdr</span>
+      <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em' }}>holdr</span>
     </div>
   );
 }

@@ -9,9 +9,10 @@ import { TokenDetail } from './launch/TokenDetail';
 import { CreateSoon, Me, PointsSoon } from './screens/Tabs';
 import { LegacyWallet } from './screens/LegacyWallet';
 import { screen as trackScreen } from './lib/analytics';
+import { SearchProvider, useSearch } from './launch/search';
 
 const TABS: [Tab, string, 'navDiscover' | 'navCreate' | 'navPoints' | 'navMe'][] = [
-  ['discover', 'compass', 'navDiscover'], ['create', 'rocket', 'navCreate'], ['points', 'star', 'navPoints'], ['me', 'user', 'navMe'],
+  ['discover', 'compass', 'navDiscover'], ['create', 'plusCircle', 'navCreate'], ['points', 'star', 'navPoints'], ['me', 'user', 'navMe'],
 ];
 
 function Router() {
@@ -64,10 +65,16 @@ function Router() {
 function Layout({ tab, mobileTopbar, children }: { tab: Tab | null; mobileTopbar: boolean; children: ReactNode }) {
   const { t } = useApp();
   const nav = useNav();
+  const { q, setQ, open, setOpen } = useSearch();
+  const onSearch = (v: string) => {
+    setQ(v);
+    if (v && nav.current.name !== 'home') nav.tab('discover');
+    else if (v && tab !== 'discover') nav.tab('discover');
+  };
   return (
     <div className="shell">
       <header className={'topbar' + (mobileTopbar ? '' : ' desk-only')}>
-        <button className="topbar-logo" onClick={() => nav.tab('discover')} aria-label={t('navDiscover')}><Logo /></button>
+        <button className="topbar-logo" onClick={() => { setQ(''); nav.tab('discover'); }} aria-label={t('navDiscover')}><Logo /></button>
         <nav className="topnav" aria-label={t('mainNav')}>
           {TABS.map(([id, , label]) => (
             <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => nav.tab(id)}>
@@ -75,8 +82,18 @@ function Layout({ tab, mobileTopbar, children }: { tab: Tab | null; mobileTopbar
             </button>
           ))}
         </nav>
-        <span style={{ flex: 1 }} />
-        <button className="lp-gold desk-only" onClick={() => nav.tab('create')}><Icon name="plus" size={18} />{t('create')}</button>
+        <div className="topsearch desk-only">
+          <Icon name="search" size={18} />
+          <label htmlFor="top-q" className="sr-only">{t('searchTokens')}</label>
+          <input id="top-q" type="search" value={q} onChange={(e) => onSearch(e.target.value)} placeholder={t('searchPh')} autoComplete="off" spellCheck={false} />
+        </div>
+        <span className="mobile-only" style={{ flex: 1 }} />
+        <button className="gold-btn desk-only" onClick={() => nav.tab('create')}><Icon name="plus" size={18} />{t('launchToken')}</button>
+        {tab === 'discover' && (
+          <button className="round-btn mobile-only" aria-label={t('searchTokens')} aria-pressed={open} onClick={() => { setOpen(!open); if (open) setQ(''); }}>
+            <Icon name={open ? 'close' : 'search'} size={18} />
+          </button>
+        )}
         <ConnectWallet compact />
       </header>
       <NetworkBanner />
@@ -87,7 +104,8 @@ function Layout({ tab, mobileTopbar, children }: { tab: Tab | null; mobileTopbar
           <nav className="bottom-nav mobile-only" aria-label={t('mainNav')}>
             {TABS.map(([id, icon, label]) => (
               <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => nav.tab(id)}>
-                <Icon name={icon} size={24} />{t(label)}
+                <Icon name={icon} size={22} />{t(label)}
+                {id === 'points' && <span className="soon" aria-hidden="true">{t('soon')}</span>}
               </button>
             ))}
           </nav>
@@ -101,7 +119,9 @@ export default function App() {
   return (
     <AppProvider>
       <WalletProvider>
-        <Router />
+        <SearchProvider>
+          <Router />
+        </SearchProvider>
       </WalletProvider>
     </AppProvider>
   );
