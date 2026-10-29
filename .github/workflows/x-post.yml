@@ -1,0 +1,59 @@
+name: X daily post
+
+# Posts the entry in x/posts.json whose date is today (Asia/Kuala_Lumpur).
+# 13:17 UTC = 21:17 Malaysia time. GitHub may start scheduled runs a few minutes late.
+on:
+  schedule:
+    - cron: '17 13 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'check = verify credentials only; post = post the entry for the date below (or today)'
+        type: choice
+        options: [check, post]
+        default: check
+      date:
+        description: 'YYYY-MM-DD (post mode only; empty = today in Malaysia time)'
+        required: false
+        default: ''
+  push:
+    branches: [main]
+    paths: ['x/**', '.github/workflows/x-post.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: x-post
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+
+      - name: Validate posts
+        run: node x/post.mjs validate
+
+      - name: Check credentials
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'check'
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+        run: node x/post.mjs check
+
+      - name: Post
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'post')
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          POST_DATE: ${{ inputs.date }}
+        run: node x/post.mjs post "$POST_DATE"

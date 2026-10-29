@@ -1,0 +1,37 @@
+[
+  {
+    "date": "2026-10-30",
+    "note": "Day 1 · intro (pin manually after it goes out)",
+    "text": "gm. Marketer by day, builder by night.\n\nI'm building Holdr, a token launchpad on Robinhood Chain. The team is me and a few AI tools.\n\nClick to launch. Hold to earn.\n\nTestnet first. I'll share everything here: progress, mistakes, numbers.\n\nFollow along 🌙"
+  },
+  {
+    "date": "2026-10-31",
+    "note": "Day 2 · persona",
+    "text": "12 years in marketing. I've launched a lot of products. None of them were mine.\n\nHoldr is the first one that is.\n\nI still have a full-time job. Holdr gets my nights and weekends.\n\nAnyone else building something on the side? How do you keep going?"
+  },
+  {
+    "date": "2026-11-01",
+    "note": "Day 3 · mindset",
+    "text": "Holdr started as a wallet. I shipped it.\n\nThen I had to admit it: nobody needs another wallet. People already trust theirs.\n\nSo I deleted it and kept the part people want.\n\nLoving your code isn't the same as building a product. What have you had to let go of?"
+  },
+  {
+    "date": "2026-11-02",
+    "note": "Day 4 · persona + AI",
+    "text": "The Holdr team: me and AI.\n\nI decide what to build, what to cut, and what the rules are. AI helps me write it.\n\nThen we try to break it. 200 contract tests. One full testnet run: launch to graduation, 19 transactions.\n\nWhat would you build with AI?"
+  },
+  {
+    "date": "2026-11-03",
+    "note": "Day 5 · product",
+    "text": "Every trade on Holdr has a 1% fee.\n\n0.7% goes to whoever launched the token. 0.3% to the platform. Before graduation and after.\n\nIf you build the community, you should share in what it makes.\n\nCreators: what would you do with the fees?"
+  },
+  {
+    "date": "2026-11-04",
+    "note": "Day 6 · mindset",
+    "text": "Maybe unpopular: holding should be fun again.\n\nRight now the game is speed. Snipe, flip, leave.\n\nOn Holdr, the longer you hold, the more points you collect. Day 7: ×1.5. Day 30: ×2.\n\nWhat's the longest you've ever held a token?"
+  },
+  {
+    "date": "2026-11-05",
+    "note": "Day 7 · weekly progress (update ticks to real progress before this date)",
+    "text": "Week 1 update:\n\n✅ Contracts on testnet\n✅ Connect MetaMask, Rabby, OKX and more\n✅ Trade on the curve and on Uniswap\n✅ Portfolio: P&L, days held, creator fees\n\nNext: the launch page.\n\nSmall steps, every night.\n\nWhat do you want to see first?"
+  }
+]
