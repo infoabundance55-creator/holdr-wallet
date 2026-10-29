@@ -50,6 +50,7 @@ export const POOL_ABI = [
   'event Trade(address indexed trader, bool indexed isBuy, uint256 usdgAmount, uint256 tokenAmount, uint256 fee, uint256 surcharge, uint256 realUsdgAfter, uint256 tokensSoldAfter)',
   'event Graduated(address indexed token, address indexed migrator, uint256 usdg, uint256 tokens, uint256 tokensBurned)',
   'event CreatorTransferred(address indexed previous, address indexed current)',
+  'event CreatorFeesClaimed(address indexed creator, address indexed to, uint256 amount)',
   'function virtualUsdg() view returns (uint256)',
   'function initialVirtualTokens() view returns (uint256)',
   'function gradThreshold() view returns (uint256)',
@@ -65,6 +66,10 @@ export const POOL_ABI = [
 
 export const PM_ABI = [
   'event Swap(bytes32 indexed id, address indexed sender, int128 amount0, int128 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick, uint24 fee)',
+];
+
+export const LOCKER_EVENTS_ABI = [
+  'event Claimed(address indexed account, address indexed currency, address indexed to, uint256 amount)',
 ];
 
 export const ROUTER_EVENTS_ABI = [

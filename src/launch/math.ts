@@ -31,6 +31,20 @@ export interface TradeEv {
   price: number;
 }
 
+/** A creator fee claim: on the curve (USDG) or from the liquidity locker (USDG or the token). */
+export interface ClaimEv {
+  block: number;
+  logIndex: number;
+  time: number;
+  tx: string;
+  account: string;
+  /** Token the fees came from (lower-case). */
+  token: string;
+  /** 'usdg' or 'token'. */
+  currency: 'usdg' | 'token';
+  amount: bigint;
+}
+
 export interface LaunchToken {
   token: string;
   pool: string;

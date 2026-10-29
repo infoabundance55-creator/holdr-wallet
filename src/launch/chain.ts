@@ -1,7 +1,7 @@
 import { Contract, Interface, getAddress, type JsonRpcProvider } from 'ethers';
 import { defaultKV } from '../lib/kv';
-import { ERC20_ABI, FACTORY_ABI, PM_ABI, POOL_ABI, ROUTER_EVENTS_ABI, type LaunchContracts } from './contracts';
-import { applyTransfer, priceAt, type LaunchToken, type PoolParams, type TradeEv } from './math';
+import { ERC20_ABI, FACTORY_ABI, LOCKER_EVENTS_ABI, PM_ABI, POOL_ABI, ROUTER_EVENTS_ABI, type LaunchContracts } from './contracts';
+import { applyTransfer, priceAt, type ClaimEv, type LaunchToken, type PoolParams, type TradeEv } from './math';
 import { poolId, poolKeyFor, priceFromSqrt, tokenIs0 } from './v4';
 
 const factoryIface = new Interface(FACTORY_ABI);
@@ -9,11 +9,14 @@ const poolIface = new Interface(POOL_ABI);
 const erc20Iface = new Interface(ERC20_ABI);
 const pmIface = new Interface(PM_ABI);
 const routerIface = new Interface(ROUTER_EVENTS_ABI);
+const lockerIface = new Interface(LOCKER_EVENTS_ABI);
 
 const T_CREATED = factoryIface.getEvent('TokenCreated')!.topicHash;
 const T_TRADE = poolIface.getEvent('Trade')!.topicHash;
 const T_GRAD = poolIface.getEvent('Graduated')!.topicHash;
 const T_CREATOR = poolIface.getEvent('CreatorTransferred')!.topicHash;
+const T_CLAIM_CURVE = poolIface.getEvent('CreatorFeesClaimed')!.topicHash;
+const T_CLAIMED = lockerIface.getEvent('Claimed')!.topicHash;
 const T_TRANSFER = erc20Iface.getEvent('Transfer')!.topicHash;
 const T_SWAP = pmIface.getEvent('Swap')!.topicHash;
 const T_SWAPPED = routerIface.getEvent('Swapped')!.topicHash;
@@ -57,6 +60,8 @@ export class LaunchIndexer {
   readonly tokens = new Map<string, LaunchToken>(); // token (lower) => state
   private readonly byPool = new Map<string, LaunchToken>(); // pool (lower) => state
   private readonly byPoolId = new Map<string, LaunchToken>(); // Uniswap v4 pool id (lower) => state
+  /** Creator fee claims, oldest first. */
+  readonly claims: ClaimEv[] = [];
   private scannedTo = -1;
   private running: Promise<void> | null = null;
   private listeners = new Set<() => void>();
@@ -139,12 +144,13 @@ export class LaunchIndexer {
     const all = this.list();
     if (all.length) {
       // 2. Curve events and 3. token transfers, both over the same range.
-      const [poolLogs, transfers] = await Promise.all([
-        this.logs(all.map((t) => t.pool), [[T_TRADE, T_GRAD, T_CREATOR]], from, latest),
+      const [poolLogs, transfers, lockerClaims] = await Promise.all([
+        this.logs(all.map((t) => t.pool), [[T_TRADE, T_GRAD, T_CREATOR, T_CLAIM_CURVE]], from, latest),
         this.logs(all.map((t) => t.token), [T_TRANSFER], from, latest),
+        this.logs([this.c.locker], [T_CLAIMED], from, latest),
       ]);
 
-      const needTimes = new Set<number>([...fresh.map((t) => t.createdBlock), ...poolLogs.map((l) => num(l.blockNumber))]);
+      const needTimes = new Set<number>([...fresh.map((t) => t.createdBlock), ...poolLogs.map((l) => num(l.blockNumber)), ...lockerClaims.map((l) => num(l.blockNumber))]);
       await this.loadBlockTimes([...needTimes]);
       for (const t of fresh) t.createdAt = t.params?.launchTime || this.blockTimes.get(t.createdBlock) || 0;
 
@@ -169,8 +175,21 @@ export class LaunchIndexer {
           t.burned = ev.args.tokensBurned;
         } else if (l.topics[0] === T_CREATOR) {
           t.creator = getAddress(ev.args.current);
+        } else if (l.topics[0] === T_CLAIM_CURVE) {
+          this.claims.push({ ...this.ref(l, time), account: getAddress(ev.args.creator), token: t.token.toLowerCase(), currency: 'usdg', amount: ev.args.amount });
         }
       }
+
+      const usdgLc = this.c.usdg.toLowerCase();
+      for (const l of lockerClaims) {
+        const a = lockerIface.parseLog(l)!.args;
+        const cur = String(a.currency).toLowerCase();
+        this.claims.push({
+          ...this.ref(l, this.blockTimes.get(num(l.blockNumber)) ?? 0), account: getAddress(a.account),
+          token: cur === usdgLc ? '' : cur, currency: cur === usdgLc ? 'usdg' : 'token', amount: a.amount,
+        });
+      }
+      this.claims.sort((a, b) => a.block - b.block || a.logIndex - b.logIndex);
 
       // 4. Uniswap v4 swaps for graduated tokens (and who traded, from the router's own event).
       const grads = all.filter((t) => t.graduated);
@@ -188,6 +207,10 @@ export class LaunchIndexer {
     this.latestBlock = latest;
     await this.loadBlockTimes([latest]);
     this.latestTime = this.blockTimes.get(latest) ?? Math.floor(Date.now() / 1000);
+  }
+
+  private ref(l: RawLog, time: number) {
+    return { block: num(l.blockNumber), logIndex: num(l.logIndex), time, tx: l.transactionHash };
   }
 
   private async scanSwaps(grads: LaunchToken[], from: number, to: number) {
