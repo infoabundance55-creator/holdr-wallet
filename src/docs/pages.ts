@@ -38,8 +38,12 @@ export const PAGES: DocPage[] = ORDER.flatMap(([group, slugs, soon]) =>
 
 export const GROUPS: string[] = ORDER.map(([g]) => g);
 
+/** Old slugs that moved, so shared links keep working. */
+const MOVED: Record<string, string> = { 'genesis-characters': 'characters' };
+
 export function pageBySlug(slug: string): DocPage | undefined {
-  return PAGES.find((p) => p.slug === slug);
+  const s = MOVED[slug] ?? slug;
+  return PAGES.find((p) => p.slug === s);
 }
 
 /** Plain text of a page, for search. */
