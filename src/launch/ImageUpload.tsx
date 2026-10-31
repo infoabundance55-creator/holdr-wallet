@@ -16,7 +16,7 @@ const ERR: Record<ImageError, Key> = {
  * Token image picker: square preview, shrinks to 512 × 512 in the browser, uploads to Vercel Blob.
  * Reports the public URL (or undefined while empty, busy or failed) through onChange.
  */
-export function ImageUpload({ onChange, disabled }: { onChange: (url: string | undefined) => void; disabled?: boolean }) {
+export function ImageUpload({ onChange, onState, disabled }: { onChange: (url: string | undefined) => void; onState?: (s: State['s']) => void; disabled?: boolean }) {
   const t = useT();
   const input = useRef<HTMLInputElement>(null);
   const [st, setSt] = useState<State>({ s: 'empty' });
@@ -25,6 +25,7 @@ export function ImageUpload({ onChange, disabled }: { onChange: (url: string | u
 
   // Release the object URL used for the preview.
   const preview = st.s === 'empty' ? undefined : st.preview;
+  useEffect(() => { onState?.(st.s); }, [st.s, onState]);
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
 
   async function start(f: File) {

@@ -189,6 +189,21 @@ const zh = {
   imgUploading: '上传中…', imgDone: '已上传',
   imgErrType: '只支持 PNG、JPG、WebP 或 GIF。', imgErrSize: '图片太大，请换一张 10 MB 以内的。',
   imgErrDecode: '读不了这张图片，请换一张。', imgErrUpload: '上传失败，请重试。', imgErrNetwork: '网络有问题，请检查后重试。',
+  // launch form
+  ceKicker: '发币', ceLede: '每个币规则都一样。每笔交易的手续费，你拿 70%。', ceNoNet: '这个网络还没开放发币，请切换到测试网。',
+  ceName: '名称', ceNamePh: '代币名称', ceSymbol: '代号', ceDesc: '简介', ceDescPh: '一句话介绍你的币', ceLinks: '连结', ceOptional: '选填', ceWebsite: '网站',
+  ceNameEmpty: '请输入名称。', ceNameLong: '名称太长（最多 32 个英文字母，中文约 10 个字）。', ceSymEmpty: '请输入代号。', ceSymLong: '代号最多 10 个字。',
+  ceSymChars: '代号只能用英文字母和数字。', ceDescLong: '简介最多 280 个字。', ceLinkBad: '连结格式不对（要 https）。', ceFixFields: '请先改好上面标红的地方。',
+  cePreview: '预览 · 在列表里的样子', ceJustNow: '刚刚 · 你发的',
+  ceRulesKicker: '规则 · 每个币都一样', ceRFee: '发币费', ceRSupply: '总量', ceRSupplyV: '10 亿 · 曲线 8 亿 / LP 2 亿', ceROpen: '开盘市值',
+  ceRGrad: '毕业门槛', ceRGradV: '筹满 {n} USDG', ceRTrade: '交易手续费', ceRTradeV: '{f}% · 你拿 {s}%', ceRAtGrad: '毕业时', ceRAtGradV: 'LP 永久锁住，剩余代币销毁',
+  ceRTax: '发币者税', ceRTaxV: '没有', ceRSnipe: '防狙击', ceRSnipeV: '开盘 5 秒递减附加费',
+  cePayNow: '现在要付', ceLaunchBtn: '发行 ${sym}', ceFinal: '发出后名称、代号和图片都不能改。发币即表示你了解相关风险。',
+  ceEthLow: '发币要 {n} ETH 加上 gas，你的 ETH 不够。', ceErrEth: 'ETH 不够付发币费和 gas。', ceErrPaused: '发币暂停中，请稍后再试。', ceErrFee: '发币费刚改了，请刷新页面再试。',
+  ceCfgErr: '读不到发币设置，请检查网络后刷新。', ceImgWait: '图片还在上传…', ceImgFix: '图片上传失败：请重试或移除图片。',
+  ceErrFirstMax: '首次买入超过上限，请减少金额。', ceErrFirstSlip: '首次买入价格有变，请再试一次。', ceErrUsdg: 'USDG 不够首次买入。', ceErrAllowance: 'USDG 授权不够，请再试一次。',
+  ceFailed: '发币失败', ceStPending: '发币中，等待链上确认…',
+  ceLive: '${sym} 上线了！', ceGoToken: '前往币页', ceAgain: '再发一个币',
 };
 
 export type Key = keyof typeof zh;
@@ -374,6 +389,20 @@ const en: Record<Key, string> = {
   imgUploading: 'Uploading…', imgDone: 'Uploaded',
   imgErrType: 'Use a PNG, JPG, WebP or GIF.', imgErrSize: 'That image is too big. Pick one under 10 MB.',
   imgErrDecode: "We couldn't read that image. Try another one.", imgErrUpload: 'Upload failed. Try again.', imgErrNetwork: 'Network problem. Check your connection and try again.',
+  ceKicker: 'Launch', ceLede: 'Same fair rules for every token. You keep 70% of every trading fee.', ceNoNet: 'Launching is not open on this network yet. Switch to testnet.',
+  ceName: 'Name', ceNamePh: 'Token name', ceSymbol: 'Ticker', ceDesc: 'Description', ceDescPh: 'One line about your token', ceLinks: 'Links', ceOptional: 'optional', ceWebsite: 'Website',
+  ceNameEmpty: 'Enter a name.', ceNameLong: 'Name is too long (32 letters max).', ceSymEmpty: 'Enter a ticker.', ceSymLong: 'Ticker is 10 characters max.',
+  ceSymChars: 'Ticker can only use letters A–Z and numbers.', ceDescLong: 'Description is 280 characters max.', ceLinkBad: "That link doesn't look right (https only).", ceFixFields: 'Fix the fields marked in red first.',
+  cePreview: 'Preview · how it shows in the list', ceJustNow: 'just now · by you',
+  ceRulesKicker: 'The rules · same for every token', ceRFee: 'Launch fee', ceRSupply: 'Supply', ceRSupplyV: '1B · 800M curve / 200M LP', ceROpen: 'Opening market cap',
+  ceRGrad: 'Graduates at', ceRGradV: '{n} USDG raised', ceRTrade: 'Trading fee', ceRTradeV: '{f}% · you get {s}%', ceRAtGrad: 'At graduation', ceRAtGradV: 'LP locked forever, rest burned',
+  ceRTax: 'Creator tax', ceRTaxV: 'None', ceRSnipe: 'Anti-snipe', ceRSnipeV: '5s decaying surcharge',
+  cePayNow: 'You pay now', ceLaunchBtn: 'Launch ${sym}', ceFinal: "Name, ticker and image can't be changed after launch. By launching you accept the risks.",
+  ceEthLow: 'Launching costs {n} ETH plus gas. You need more ETH.', ceErrEth: 'Not enough ETH for the launch fee and gas.', ceErrPaused: 'Launching is paused. Try again later.', ceErrFee: 'The launch fee just changed. Refresh and try again.',
+  ceCfgErr: "Couldn't load the launch settings. Check your connection and refresh.", ceImgWait: 'Image still uploading…', ceImgFix: 'Image upload failed: retry or remove it.',
+  ceErrFirstMax: 'First buy is over the limit. Lower the amount.', ceErrFirstSlip: 'First-buy price changed. Try again.', ceErrUsdg: 'Not enough USDG for the first buy.', ceErrAllowance: 'USDG approval too low. Try again.',
+  ceFailed: 'Launch failed', ceStPending: 'Launching, waiting for the chain…',
+  ceLive: '${sym} is live!', ceGoToken: 'Go to token page', ceAgain: 'Launch another',
 };
 
 export const DICTS: Record<Lang, Record<Key, string>> = { zh, en };

@@ -68,3 +68,23 @@ export const lockerAbi = parseAbi([
   'error NotMigrated()',
   'error ZeroAddress()',
 ]);
+
+export const launchAbi = parseAbi([
+  'struct LaunchParams { uint256 gradThreshold; uint256 firstBuyMaxTokens; address migrator; uint16 feeBps; uint16 creatorShareBps; uint16[5] surchargeBps; }',
+  'struct Config { LaunchParams params; uint256 launchFee; address treasury; }',
+  'function config() view returns (Config)',
+  'function paused() view returns (bool)',
+  'function createToken(string name_, string symbol_, string metadataURI_, uint256 firstBuyUsdg, uint256 minTokensOut) payable returns (address token, address pool)',
+  'event TokenCreated(address indexed token, address indexed pool, address indexed creator, string name, string symbol, string metadataURI, uint256 launchFee)',
+  'error LaunchPaused()',
+  'error MigratorNotLinked()',
+  'error WrongLaunchFee(uint256 required)',
+  'error BadName()',
+  'error BadSymbol()',
+  'error UsdgNotReceived()',
+  'error FirstBuyTooLarge()',
+  'error SlippageExceeded()',
+  'error ZeroAmount()',
+  'error ERC20InsufficientBalance(address sender, uint256 balance, uint256 needed)',
+  'error ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed)',
+]);

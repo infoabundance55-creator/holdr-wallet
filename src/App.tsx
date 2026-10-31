@@ -6,7 +6,8 @@ import { ConnectWallet, NetworkBanner } from './wallet/ConnectWallet';
 import { Icon, Logo } from './components/ui';
 import { Discover } from './launch/Discover';
 import { TokenDetail } from './launch/TokenDetail';
-import { CreateSoon, PointsSoon } from './screens/Tabs';
+import { PointsSoon } from './screens/Tabs';
+import { Create } from './launch/Create';
 import { Me } from './launch/Me';
 import { LegacyWallet } from './screens/LegacyWallet';
 import { screen as trackScreen } from './lib/analytics';
@@ -49,7 +50,7 @@ function Router() {
   let body: ReactNode;
   switch (current.name) {
     case 'home':
-      body = current.tab === 'discover' ? <Discover /> : current.tab === 'create' ? <CreateSoon /> : current.tab === 'points' ? <PointsSoon /> : <Me />;
+      body = current.tab === 'discover' ? <Discover /> : current.tab === 'create' ? <Create /> : current.tab === 'points' ? <PointsSoon /> : <Me />;
       break;
     case 'token': body = <TokenDetail token={current.token} />; break;
     case 'legacy': body = <LegacyWallet />; break;
