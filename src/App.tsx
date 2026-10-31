@@ -11,40 +11,60 @@ import { Create } from './launch/Create';
 import { Me } from './launch/Me';
 import { LegacyWallet } from './screens/LegacyWallet';
 import { screen as trackScreen } from './lib/analytics';
+import { pathToRoute, routeToPath } from './routes';
 import { SearchProvider, useSearch } from './launch/search';
+import { useLaunch } from './launch/useLaunch';
 
 const TABS: [Tab, string, 'navDiscover' | 'navCreate' | 'navPoints' | 'navMe'][] = [
   ['discover', 'compass', 'navDiscover'], ['create', 'plusCircle', 'navCreate'], ['points', 'star', 'navPoints'], ['me', 'user', 'navMe'],
 ];
 
-function Router() {
-  const [stack, setStack] = useState<Route[]>([{ name: 'home', tab: 'discover' }]);
-  const current = stack[stack.length - 1];
+/** How many in-app screens sit behind this one in the browser history (0 = opened directly). */
+const depth = (): number => {
+  const s = window.history.state as { holdr?: number } | null;
+  return typeof s?.holdr === 'number' ? s.holdr : 0;
+};
 
-  // Browser / Android back button pops one screen.
+function Router() {
+  // The URL is the source of truth: /, /create, /points, /me, /me/legacy, /token/0x…
+  const [current, setCurrent] = useState<Route>(() => pathToRoute(window.location.pathname));
+
   useEffect(() => {
-    const onPop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
+    // Normalise the first URL (unknown path → /) and mark it as the first in-app entry.
+    const first = routeToPath(pathToRoute(window.location.pathname));
+    window.history.replaceState({ holdr: depth() }, '', first + window.location.search + window.location.hash);
+    const onPop = () => setCurrent(pathToRoute(window.location.pathname));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
   useEffect(() => { window.scrollTo(0, 0); }, [current]);
 
+  // Tab title: token pages show the token, so shared links and browser history read well.
+  const ix = useLaunch();
+  const tkName = current.name === 'token' ? ix?.get(current.token)?.symbol : undefined;
+  useEffect(() => { document.title = tkName ? `$${tkName} · Holdrs` : 'Holdrs · Launchpad on Robinhood Chain'; }, [tkName]);
+
   // Anonymous screen views for the usage funnel (no addresses or amounts).
   const screenName = current.name === 'home' ? current.tab : current.name; // token screens report as 'token', never the address
   useEffect(() => { trackScreen(screenName); }, [screenName]);
 
   const push = useCallback((r: Route) => {
-    window.history.pushState({ holdr: true }, '');
-    setStack((s) => [...s, r]);
+    const path = routeToPath(r);
+    if (path !== window.location.pathname) window.history.pushState({ holdr: depth() + 1 }, '', path);
+    setCurrent(r);
   }, []);
+  const replace = useCallback((r: Route) => {
+    window.history.replaceState({ holdr: depth() }, '', routeToPath(r));
+    setCurrent(r);
+  }, []);
+  // Back: use browser history when we came from another in-app screen, else go home (link opened directly).
   const pop = useCallback(() => {
-    if (stack.length > 1) window.history.back();
-    else setStack([{ name: 'home', tab: 'discover' }]);
-  }, [stack.length]);
-  const reset = useCallback((r: Route) => setStack([r]), []);
-  const replace = useCallback((r: Route) => setStack((s) => [...s.slice(0, -1), r]), []);
-  const tab = useCallback((tb: Tab) => setStack([{ name: 'home', tab: tb }]), []);
+    if (depth() > 0) window.history.back();
+    else replace({ name: 'home', tab: 'discover' });
+  }, [replace]);
+  const reset = replace;
+  const tab = useCallback((tb: Tab) => push({ name: 'home', tab: tb }), [push]);
   const nav: Nav = useMemo(() => ({ push, pop, reset, replace, tab, current }), [push, pop, reset, replace, tab, current]);
 
   let body: ReactNode;

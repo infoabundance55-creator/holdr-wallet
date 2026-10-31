@@ -14,6 +14,7 @@ import { ago, ART, Bar, Cast, Delta, Spark, TokenAvatar } from './parts';
 import { useSearch } from './search';
 import { useLaunch } from './useLaunch';
 import type { LaunchIndexer } from './chain';
+import { HodlCalc } from './Hodl';
 import './launch.css';
 
 const FILTERS: [Filter, Key][] = [['trending', 'fTrending'], ['new', 'fNew'], ['almost', 'fAlmost'], ['graduated', 'fGraduated'], ['mcap', 'fMcap']];
@@ -150,6 +151,7 @@ export function Discover() {
         </section>
         {statGrid}
         {grads}
+        <HodlCalc />
         {listBlock}
         <How />
         <Footer />
@@ -165,6 +167,7 @@ export function Discover() {
       {grads}
       {statGrid}
       <p className="lp-statnote">{t('stNote')}</p>
+      <HodlCalc />
       {listBlock}
       <How />
       <Footer />

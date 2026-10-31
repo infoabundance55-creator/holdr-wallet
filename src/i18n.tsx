@@ -112,7 +112,7 @@ const zh = {
   bannerSub: '一分钟发一个币。持有赚积分，在 HODL Town 盖房子。', browseTokens: '浏览代币', launchToken: '发一个币',
   comingSoon: '即将推出',
   miniPointsT: 'S1 积分赛季', miniPointsS: '交易、持有、发币都有分。',
-  miniNftT: 'NFT 角色', miniNftS: '免费 mint 5,000 个，绑定后积分加成。',
+  miniNftT: '角色等级', miniNftS: '4 个角色跟着积分解锁，最高积分 +8%。',
   miniGameT: 'Moon Jump', miniGameS: '跳上 K 线，金币就是积分。',
   seeAll: '查看全部', usdgToGo: '还差 {n} USDG',
   stLaunched: '已发币', stGraduated: '已毕业', stVol: '24H 成交量', stPaid: '发币者已赚', stPaidDesk: '发币者已赚 · 手续费 70%',
@@ -131,7 +131,7 @@ const zh = {
   footDisclaimer: 'Built on Robinhood Chain。Holdrs 是独立项目，与 Robinhood 没有合作，也没有获得其背书。迷因币风险很高，只用你输得起的钱。',
   // v2 token detail
   onCurve: '曲线中', gradUni: '已毕业 · Uniswap', launchedAgo: '{ago}发币，发币者', graduatedAgo: '{ago}毕业',
-  copyContract: '复制合约地址', share: '分享', linkCopied: '已复制连结',
+  copyContract: '复制合约地址', share: '分享', linkCopied: '已复制连结', copyLink: '复制币页连结',
   candles: 'K 线', line: '折线',
   kPrice: '价格', kMcap: '市值', kVol: '24H 成交量', kHolders: '持有人', kLiq: '流动性', kRaised: '已筹', kFee: '交易手续费', kPoolLiq: '池子流动性', kVenue: '交易场所',
   gradProgress: '毕业进度', toGoShort: '还差 {n}', gradWhen: '曲线筹满后，代币会转到 Uniswap：',
@@ -176,9 +176,7 @@ const zh = {
   claimStep: '在钱包确认（{i}/{n}）', claimPending: '等待链上确认（{i}/{n}）…', claimDone: '手续费已领取',
   lockerFees: 'Uniswap 手续费（已结算）', lockerFeesSub: '所有已毕业的币合在一起领取。',
   feesPlusTok: '+ {amt} {sym}',
-  mePoints: '我的积分 · S1', mePointsSub: '你在 HODL Town 的房子从帐篷开始，跟着累计积分升级。',
-  meChars: '我的角色', meCharsSub: 'NFT 角色即将推出：免费 mint，gas 自付。绑定后有积分加成。',
-  boostTrade: '交易 +20%', boostLaunch: '发币 +20%', boostHold: '持有 +20%', boostAll: '全部 +10%',
+  meChars: '我的角色',
   meActivity: '交易记录', actEmpty: '还没有记录。',
   actBuy: '买入 {amt} {sym}，花 {usdg} USDG', actSell: '卖出 {amt} {sym}，得到 {usdg} USDG', actLaunch: '发了 {name}（${sym}）',
   actClaim: '领取 {amt} {cur} 手续费', tagBuy: '买', tagSell: '卖', tagNew: '发币', tagFee: '手续费',
@@ -208,6 +206,14 @@ const zh = {
   ceFirstNote: '和发币同一笔交易，比所有人先买，不收防狙击附加费。要先授权这笔 USDG。', ceUsdgBal: '你的 Test USDG：{n}',
   ceLiveKicker: '已在 Robinhood Chain 上线', ceLiveSub: '现在就分享出去。每一笔交易，你都拿交易额的 0.7%。', ceLiveFirst: '你的首次买入：{amt} {sym}',
   ceLivePts: 'S1 开始后：有 5 个不同钱包买入，就有 +1,000 发币积分。', ceShareX: '分享到 X',
+  // HODL calculator + level card (4c)
+  hcKicker: 'HODL 计算器', hcTitle: '拿得越久，赚得越多', hcAmt: '买入金额', hcDays: '持有', hcDaysN: '{n} 天', hcLevel: '你今天的等级',
+  hcTrade: '交易积分', hcHold: '持有积分 · {n} 天', hcBoost: '{name} · 第 {lv} 级 · +{p}%', hcBoostNone: '浣熊 · 第 1–2 级 · +0%', hcTotal: '合计 ≈',
+  hcLvlOf: '第 {n} 级 / 共 6 级', hcToNext: '再 {n} 分到{house}', hcTop: '已到最高等级',
+  hcNote: '按今天的价值估算。等级加成适用于全部积分（推荐积分除外）。积分目前只做记录和排行，不代表任何价值或承诺。',
+  lvKicker: '第 {n} 级 · {house}', lvBoost: '积分 +{p}%', lvS1: 'S1 开始后，跟着累计积分升级。每个人都从第 1 级开始。',
+  lvNext: '第 {n} 级：{pts} 分', lvUnlock: '{pts} 分解锁', lvUnlocked: '已解锁', lvRule: '加成适用于全部积分（推荐积分除外），升级隔天生效，不会降级。角色不是 NFT。',
+  lvChars: '角色',
 };
 
 export type Key = keyof typeof zh;
@@ -317,7 +323,7 @@ const en: Record<Key, string> = {
   bannerSub: 'Launch a token in a minute. Hold, earn points, grow your house in HODL Town.', browseTokens: 'Browse tokens', launchToken: 'Launch a token',
   comingSoon: 'COMING SOON',
   miniPointsT: 'Season 1 points', miniPointsS: 'Earn for trading, holding and launching.',
-  miniNftT: 'NFT characters', miniNftS: '5,000 free mints. Bind one for a points boost.',
+  miniNftT: 'Level up your character', miniNftS: '4 characters unlock as you level up, up to +8% on your points.',
   miniGameT: 'Moon Jump', miniGameS: 'Jump up the candles. Every coin is a point.',
   seeAll: 'See all', usdgToGo: '{n} USDG TO GO',
   stLaunched: 'TOKENS LAUNCHED', stGraduated: 'GRADUATED', stVol: '24H VOLUME', stPaid: 'PAID TO CREATORS', stPaidDesk: 'PAID TO CREATORS · 70% OF FEES',
@@ -336,7 +342,7 @@ const en: Record<Key, string> = {
   footDisclaimer: 'Built on Robinhood Chain. Holdrs is independent and not affiliated with or endorsed by Robinhood. Meme tokens are high risk; only trade what you can afford to lose.',
   // v2 token detail
   onCurve: 'On curve', gradUni: 'Graduated · Uniswap', launchedAgo: 'Launched {ago} by', graduatedAgo: 'graduated {ago}',
-  copyContract: 'Copy contract address', share: 'Share', linkCopied: 'Link copied',
+  copyContract: 'Copy contract address', share: 'Share', linkCopied: 'Link copied', copyLink: 'Copy token page link',
   candles: 'Candles', line: 'Line',
   kPrice: 'PRICE', kMcap: 'MARKET CAP', kVol: '24H VOLUME', kHolders: 'HOLDERS', kLiq: 'LIQUIDITY', kRaised: 'RAISED', kFee: 'TRADE FEE', kPoolLiq: 'POOL LIQUIDITY', kVenue: 'VENUE',
   gradProgress: 'GRADUATION PROGRESS', toGoShort: '{n} to go', gradWhen: 'When the curve fills, the token moves to Uniswap:',
@@ -381,9 +387,7 @@ const en: Record<Key, string> = {
   claimStep: 'Confirm in your wallet ({i}/{n})', claimPending: 'Waiting for the chain ({i}/{n})…', claimDone: 'Fees claimed',
   lockerFees: 'Uniswap fees (collected)', lockerFeesSub: 'Claimed together for all your graduated tokens.',
   feesPlusTok: '+ {amt} {sym}',
-  mePoints: 'My points · Season 1', mePointsSub: 'Your HODL Town house starts as a tent and grows with your total points.',
-  meChars: 'My characters', meCharsSub: 'Characters are coming soon: free mint, you pay gas. A bound character boosts your points.',
-  boostTrade: 'TRADE +20%', boostLaunch: 'LAUNCH +20%', boostHold: 'HOLD +20%', boostAll: 'ALL +10%',
+  meChars: 'My characters',
   meActivity: 'Activity', actEmpty: 'No activity yet.',
   actBuy: 'Bought {amt} {sym} for {usdg} USDG', actSell: 'Sold {amt} {sym} for {usdg} USDG', actLaunch: 'Launched {name} (${sym})',
   actClaim: 'Claimed {amt} {cur} in fees', tagBuy: 'BUY', tagSell: 'SELL', tagNew: 'NEW', tagFee: 'FEE',
@@ -411,6 +415,14 @@ const en: Record<Key, string> = {
   ceFirstNote: 'Goes in with the launch, before anyone else, and skips the launch surcharge. You approve this USDG first.', ceUsdgBal: 'Your test USDG: {n}',
   ceLiveKicker: 'Live on Robinhood Chain', ceLiveSub: 'Share it now. Every trade pays you 0.7% of its size.', ceLiveFirst: 'Your first buy: {amt} {sym}',
   ceLivePts: 'Once Season 1 starts: +1,000 launch points after 5 different wallets buy.', ceShareX: 'Share on X',
+  // HODL calculator + level card (4c)
+  hcKicker: 'HODL CALCULATOR', hcTitle: 'The longer you hold, the more you earn', hcAmt: 'Buy amount', hcDays: 'Hold for', hcDaysN: '{n} days', hcLevel: 'Your level today',
+  hcTrade: 'Trade points', hcHold: 'Hold points · {n} days', hcBoost: '{name} · Level {lv} · +{p}%', hcBoostNone: 'Raccoon · Level 1–2 · +0%', hcTotal: 'Total ≈',
+  hcLvlOf: 'LEVEL {n} OF 6', hcToNext: '{n} points to {house}', hcTop: 'Top level reached',
+  hcNote: "Estimate at today's value. Your level sets the boost on all points except invites. Points are for records and rankings only and carry no value or promise.",
+  lvKicker: 'LEVEL {n} · {house}', lvBoost: '+{p}% POINTS', lvS1: 'From Season 1 you level up with your total points. Everyone starts at level 1.',
+  lvNext: 'Level {n} at {pts}', lvUnlock: 'Unlocks at {pts}', lvUnlocked: 'Unlocked', lvRule: 'The boost counts on all points except invites, starts the day after you level up, and never goes down. Characters are not NFTs.',
+  lvChars: 'Characters',
 };
 
 export const DICTS: Record<Lang, Record<Key, string>> = { zh, en };

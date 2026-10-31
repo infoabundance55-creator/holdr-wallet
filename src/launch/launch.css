@@ -660,3 +660,59 @@ a.me-claimst { color: var(--down-soft); text-decoration: none; }
 .cr-done-acts { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; }
 .cr-done-acts .tp-go { text-decoration: none; }
 .tp-go.cr-ghost { background: transparent; border: 1px solid var(--line-2); color: var(--text); font-size: 17px; font-weight: 700; }
+.cr-link { margin-top: 0; color: var(--text-2); font-weight: 600; font-size: 13px; }
+
+/* ---------- HODL calculator (4c) ---------- */
+.hc { margin: 24px 16px 0; padding: 20px 16px; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 20px; }
+.lp-desk .hc { margin: 0; padding: 32px; border-radius: 28px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
+.hc-in, .hc-out { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.hc-out { gap: 14px; }
+.hc-head { display: flex; flex-direction: column; gap: 8px; }
+.hc-head h2 { margin: 0; font-size: 22px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
+.lp-desk .hc-head h2 { font-size: 28px; }
+.hc-field { display: flex; flex-direction: column; gap: 10px; }
+.hc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.hc-row label, .hc-lab, .hc-sum .hc-row span { font-size: 14px; font-weight: 600; color: var(--text-3); }
+.hc-row .num { font-family: var(--mono); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hc-row .gold { color: var(--gold); }
+.hc input[type=range] { width: 100%; height: 28px; margin: 0; accent-color: var(--gold); }
+.hc-chars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.hc-chars button { height: 88px; padding: 4px; border-radius: 14px; background: var(--surface-2); border: 2px solid var(--surface-2); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; font-family: var(--mono); font-size: 11px; font-weight: 700; cursor: pointer; }
+.hc-chars button[aria-pressed=true] { background: rgba(255,201,77,0.10); border-color: var(--gold); }
+.hc-chars img { height: 54px; width: auto; }
+.hc-sum { border-radius: 20px; background: var(--surface-2); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.hc-sum .hc-row .num { font-size: 15px; }
+.hc-line { height: 1px; background: var(--line); }
+.hc-row.total span { font-size: 16px; font-weight: 700; color: var(--text); }
+.hc-row.total .num { font-size: 32px; }
+.lp-desk .hc-row.total .num { font-size: 40px; }
+.hc-house { display: flex; align-items: center; gap: 14px; border-radius: 20px; background: var(--surface-2); padding: 14px 16px; }
+.hc-house .pic { width: 84px; height: 72px; flex: none; display: flex; align-items: flex-end; justify-content: center; }
+.hc-house .pic img { max-width: 80px; max-height: 70px; image-rendering: pixelated; }
+.hc-house .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.hc-house .info b { font-size: 17px; }
+.hc-house .s { font-size: 13px; color: var(--text-3); }
+.hc-bar { height: 8px; border-radius: 999px; background: var(--ground); overflow: hidden; }
+.hc-bar i { display: block; height: 100%; border-radius: 999px; background: var(--gold); transition: width .35s ease; }
+.hc-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--muted); }
+
+/* ---------- Level card on Me (4c, design v2 M7 / D4) ---------- */
+.lv { border-radius: 22px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+.lv-top { display: flex; align-items: flex-end; gap: 14px; padding: 16px 18px 0; background: var(--indigo); }
+.lv-top .me-img { height: 104px; flex: none; }
+.lv-top .id { flex: 1; min-width: 0; padding-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+.lv-top .id b { font-size: 20px; font-weight: 800; color: #fff; }
+.lv-top .pill { align-self: flex-start; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--gold); color: var(--on-gold); display: inline-flex; align-items: center; font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.lv-top .house { height: 52px; margin-bottom: 14px; image-rendering: pixelated; }
+.lv-body { padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 10px; }
+.lv-body .soon { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.45; color: var(--text-3); }
+.lv-body .soon .lp-pill { flex: none; }
+.lv-chars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; list-style: none; margin: 0; padding: 0; }
+.lv-chars li { padding: 10px 4px 8px; border-radius: 14px; background: var(--surface-2); border: 1px solid transparent; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.lv-chars li.on { border-color: var(--gold); background: rgba(255,201,77,0.08); }
+.lv-chars img { height: 48px; width: auto; }
+.lv-chars li.lock img { filter: brightness(0) invert(0.32); }
+.lv-chars .n { font-size: 11px; font-weight: 700; color: var(--text-2); }
+.lv-chars .b { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--gold); }
+.lv-chars .m { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+.lv-body p { margin: 0; font-size: 12px; line-height: 1.45; color: var(--muted); }
