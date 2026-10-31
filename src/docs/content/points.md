@@ -1,10 +1,10 @@
 # Points · Season 1
 
-Holdr Points reward real use: trading, holding, launching and playing. Season 1 lasts three months and starts with the launchpad.
+Holdrs Points reward real use: trading, holding, launching and playing. Season 1 lasts three months and starts with the launchpad.
 
 > **Coming soon** These are the planned Season 1 rules. They may change before the season starts, and each season publishes its own rules.
 
-> **Note** Points have no use and no promised value. They are a record and a ranking. Holdr makes no promise of a token, an airdrop or any reward for points.
+> **Note** Points have no use and no promised value. They are a record and a ranking. Holdrs makes no promise of a token, an airdrop or any reward for points.
 
 ## How to earn
 
@@ -20,7 +20,7 @@ Holdr Points reward real use: trading, holding, launching and playing. Season 1 
 | Launching a token | 1,000 | Counts once 5 unrelated wallets have bought; up to 3 tokens a day |
 | Your token reaches $1,000 volume | +5,000 | Volume from unrelated wallets only |
 | Your token graduates | +30,000 | At least 20 different holders at graduation |
-| Referrals | 5% of your friends' points | Paid by Holdr, not taken from friends |
+| Referrals | 5% of your friends' points | Paid by Holdrs, not taken from friends |
 
 Launch points are capped at 36,000 per token.
 
@@ -60,12 +60,12 @@ Holding points use the **lowest** amount of a token you held during the day (00:
 ## Referrals
 
 - Share your personal invite link. A friend is linked to you the first time they sign in, permanently.
-- You get **5%** of your friend's points for their first 90 days, one level only. Holdr pays it on top; your friend loses nothing.
+- You get **5%** of your friend's points for their first 90 days, one level only. Holdrs pays it on top; your friend loses nothing.
 - It counts once your friend has traded **$20** in the season. Your friend also gets a **500-point** welcome bonus.
 
 ## Character bonuses
 
-A bound Genesis character adds +20% to one kind of points, or +10% to all. See [Genesis characters](/docs/genesis-characters).
+Your level adds a bonus to all points except referrals: +2% from 50,000 lifetime points, +4% from 200,000 and +8% from 1,000,000. See [Characters](/docs/characters).
 
 ## How points are credited
 

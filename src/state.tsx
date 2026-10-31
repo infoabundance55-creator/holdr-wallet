@@ -3,18 +3,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { NETWORKS, type Network } from './config';
 import { LangContext, translate, type Key, type Lang } from './i18n';
 import { loadPrefs, savePrefs, type Prefs } from './lib/store';
-import { loadVault, type Signer, type VaultRecord } from './lib/vault';
 import { Icon } from './components/ui';
 
 interface AppState {
   prefs: Prefs;
   setPrefs: (p: Partial<Prefs>) => void;
-  vault: VaultRecord | null;
-  refreshVault: () => void;
-  signer: Signer | null;
-  setSigner: (s: Signer | null) => void;
-  lock: () => void;
   network: Network;
+  /** Read-only RPC for chain data. Signing goes through the connected wallet (wagmi). */
   provider: JsonRpcProvider;
   toast: (msg: string) => void;
   t: (key: Key, vars?: Record<string, string | number>) => string;
@@ -30,8 +25,6 @@ export function useApp(): AppState {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefsState] = useState<Prefs>(() => loadPrefs());
-  const [vault, setVault] = useState<VaultRecord | null>(() => loadVault());
-  const [signer, setSigner] = useState<Signer | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
 
@@ -54,39 +47,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [network],
   );
 
-  const lock = useCallback(() => setSigner(null), []);
-  const refreshVault = useCallback(() => setVault(loadVault()), []);
-
   const toast = useCallback((msg: string) => {
     setToastMsg(msg);
     window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToastMsg(null), 2200);
+    toastTimer.current = window.setTimeout(() => setToastMsg(null), 2600);
   }, []);
-
-  // Auto-lock after inactivity, including while the tab was in the background.
-  const lastActive = useRef(Date.now());
-  useEffect(() => {
-    if (!signer) return;
-    const limit = prefs.autoLockMin * 60_000;
-    const bump = () => { lastActive.current = Date.now(); };
-    const check = () => { if (Date.now() - lastActive.current > limit) setSigner(null); };
-    bump();
-    const events = ['pointerdown', 'keydown', 'scroll'] as const;
-    events.forEach((e) => window.addEventListener(e, bump, { passive: true }));
-    document.addEventListener('visibilitychange', check);
-    const iv = window.setInterval(check, 15_000);
-    return () => {
-      events.forEach((e) => window.removeEventListener(e, bump));
-      document.removeEventListener('visibilitychange', check);
-      window.clearInterval(iv);
-    };
-  }, [signer, prefs.autoLockMin]);
 
   const lang = prefs.lang;
   const t = useCallback((key: Key, vars?: Record<string, string | number>) => translate(lang, key, vars), [lang]);
   const langCtx = useMemo(() => ({ lang, setLang: (l: Lang) => setPrefs({ lang: l }) }), [lang, setPrefs]);
 
-  const value: AppState = { prefs, setPrefs, vault, refreshVault, signer, setSigner, lock, network, provider, toast, t };
+  const value: AppState = { prefs, setPrefs, network, provider, toast, t };
 
   return (
     <LangContext.Provider value={langCtx}>

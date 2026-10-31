@@ -1,20 +1,24 @@
 # FAQ
 
-## Is Holdr live?
+## Is Holdrs live?
 
-The wallet is live. The launchpad contracts are on Robinhood Chain testnet and the launchpad app is coming. Points, Genesis characters and Moon Jump follow. See [Introduction](/docs/introduction).
+The launchpad is live on Robinhood Chain testnet at [holdrs.xyz](https://holdrs.xyz). Points, characters and Moon Jump follow. See [Introduction](/docs/introduction).
 
-## Can Holdr access my funds?
+## Can Holdrs access my funds?
 
-No. Your keys stay on your device, encrypted with your password. Holdr can't move, freeze or recover your wallet. See [Wallet security](/docs/wallet-security).
+No. You connect your own wallet, and it signs every transaction. Holdrs never sees your recovery phrase and can't move, freeze or recover your funds. See [Stay safe](/docs/wallet-security).
+
+## Which wallets work?
+
+MetaMask, Rabby, OKX Wallet, Coinbase Wallet, Bitget Wallet, Trust Wallet and any WalletConnect wallet. See [Install a wallet](/docs/wallet-setup).
 
 ## I lost my recovery phrase. Can you help?
 
-No one can. If you still have access on a device, open **Me → View recovery phrase** now and write it down. If you have lost both, the wallet can't be restored.
+No one can, including Holdrs. Your wallet app keeps your phrase. If you can still unlock it on a device, back up the phrase from the wallet's settings now. If you used the old Holdr browser wallet, see [Used the old Holdr wallet?](/docs/wallet-setup#used-the-old-holdr-wallet).
 
 ## Can a token creator rug the liquidity?
 
-No. Before graduation, USDG sits in the token's curve pool and only buyers and sellers move it. After graduation the liquidity is locked forever and nobody, including Holdr, can remove it. Creators can still sell tokens they own, like anyone else.
+No. Before graduation, USDG sits in the token's curve pool and only buyers and sellers move it. After graduation the liquidity is locked forever and nobody, including Holdrs, can remove it. Creators can still sell tokens they own, like anyone else.
 
 ## Why did my buy get fewer tokens than expected?
 

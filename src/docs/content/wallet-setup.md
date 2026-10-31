@@ -1,29 +1,52 @@
-# Create, back up and restore
+# Install a wallet and add Robinhood Chain
 
-Holdr Wallet is a self-custody web wallet. It runs in your browser, on phone or desktop, and you can add it to your home screen.
+Holdrs doesn't hold your funds. You connect your own wallet, and it signs every transaction. This guide sets up MetaMask or Rabby and adds Robinhood Chain.
 
-## Create
+## 1. Install a wallet
 
-**Create a new wallet** generates a new wallet with a 12-word recovery phrase on your device. Holdr asks you to confirm three of the words before you continue, then you set an unlock password.
+Install only from the official site or your browser's official extension store. Check the publisher before you click install.
 
-## Back up
+| Wallet | Get it from | Good for |
+|---|---|---|
+| **MetaMask** | [metamask.io](https://metamask.io) | The most widely supported wallet, desktop and mobile |
+| **Rabby** | [rabby.io](https://rabby.io) | Desktop; shows what a transaction will do before you sign |
 
-The recovery phrase is the wallet. Anyone who has it controls your funds; if you lose it and your device, your funds are gone.
+Both work the same way with Holdrs. OKX Wallet, Coinbase Wallet, Bitget Wallet, Trust Wallet and any WalletConnect wallet also work.
 
-- Write it on paper, in order, and keep it somewhere safe and offline.
-- Don't screenshot it, email it or store it in a notes app.
-- You can view it again in **Me → View recovery phrase** after entering your password.
+## 2. Create and back up your wallet
 
-## Restore or import
+1. Open the extension and choose **Create a new wallet**.
+2. Set a password. It unlocks the wallet on this device only.
+3. Write down the **recovery phrase** (12 words) on paper, in order. Keep it offline.
 
-**I already have a wallet** accepts either a 12- or 24-word recovery phrase or a private key. Importing on a new device asks you to set a new unlock password for that device.
+> **Warning** The recovery phrase is your wallet. Anyone who has it controls your funds. Holdrs will never ask for it. Never type it into a website, send it to anyone or store it in a screenshot.
 
-## Unlock and auto-lock
+## 3. Add Robinhood Chain
 
-- Your password unlocks the wallet on this device only. It is not sent anywhere.
-- Holdr locks itself after a period of inactivity: 1, 5, 15 or 60 minutes (**Me → Auto-lock**). You can also lock at any time.
-- **Change password** re-encrypts the stored key with the new password.
+The easy way: connect on [holdrs.xyz](https://holdrs.xyz) and tap **Switch network**. Your wallet asks to add Robinhood Chain testnet; approve it.
 
-## Remove a wallet
+To add it by hand (MetaMask: **Settings → Networks → Add a network manually**; Rabby: **More → Add custom network**), enter:
 
-**Me → Remove wallet from this browser** deletes the encrypted key from this device. Make sure your recovery phrase is backed up first; Holdr cannot bring it back.
+| Field | Testnet |
+|---|---|
+| Network name | Robinhood Chain Testnet |
+| RPC URL | `https://rpc.testnet.chain.robinhood.com` |
+| Chain ID | 46630 |
+| Currency symbol | ETH |
+| Block explorer | `https://explorer.testnet.chain.robinhood.com` |
+
+Mainnet details are on [Testnet](/docs/testnet#network-details). Holdrs runs on testnet only for now.
+
+## 4. On your phone
+
+- **WalletConnect:** on Holdrs, tap **Connect wallet → WalletConnect** and scan the QR code with your wallet app.
+- **In-app browser:** open MetaMask, OKX or another wallet app, go to its browser and visit holdrs.xyz.
+
+## Used the old Holdr wallet?
+
+Holdrs started as a browser wallet (v0.1). If you created a wallet there, open **Me** on holdrs.xyz in the same browser. You'll see **This browser has an old Holdr wallet. Export it**. Tap it, enter your password to view the recovery phrase, import it into MetaMask or Rabby, then remove the old wallet from the browser.
+
+## Next
+
+- [Quickstart](/docs/quickstart)
+- [Stay safe](/docs/wallet-security)

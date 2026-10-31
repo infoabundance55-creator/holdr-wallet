@@ -1,6 +1,6 @@
 # Contract reference
 
-The functions and events you need to build on the Holdr launchpad. USDG has 6 decimals; tokens have 18.
+The functions and events you need to build on the Holdrs launchpad. USDG has 6 decimals; tokens have 18.
 
 ## LaunchpadFactory
 
@@ -25,7 +25,7 @@ Event: `TokenCreated(token, pool, creator, name, symbol, metadataURI, launchFee)
 | `realUsdg()`, `tokensSold()`, `graduated()` | Progress towards graduation |
 | `currentSurchargeBps()` | Anti-snipe surcharge for a buy now |
 | `claimCreatorFees(to)` | Creator claims curve fees |
-| `withdrawProtocolFees()` | Sends Holdr's share to the treasury (anyone) |
+| `withdrawProtocolFees()` | Sends Holdrs' share to the treasury (anyone) |
 | `proposeCreator(next)`, `acceptCreator()` | Two-step creator handover |
 
 Events: `Trade(trader, isBuy, usdgAmount, tokenAmount, fee, surcharge, realUsdgAfter, tokensSoldAfter)` and `Graduated(token, migrator, usdg, tokens, tokensBurned)`.
@@ -36,11 +36,11 @@ Events: `Trade(trader, isBuy, usdgAmount, tokenAmount, fee, surcharge, realUsdgA
 
 | Function | What it does |
 |---|---|
-| `poolKeyFor(token)` | The official Uniswap v4 pool key (token / USDG, fee 10000, tick spacing 200, Holdr hook) |
+| `poolKeyFor(token)` | The official Uniswap v4 pool key (token / USDG, fee 10000, tick spacing 200, Holdrs hook) |
 | `positionOf(token)` | The locked position |
 | `collectFees(token)` | Pulls pool fees and splits them 70 / 30 (anyone) |
 | `claim(currency, to)` | Creator claims collected fees in the token or USDG |
-| `withdrawProtocolFees(currency)` | Sends Holdr's share to the treasury (anyone) |
+| `withdrawProtocolFees(currency)` | Sends Holdrs' share to the treasury (anyone) |
 
 Events: `Migrated(token, poolId, liquidity, sqrtPriceX96, usdgUsed, tokensUsed)` and `FeesCollected(token, creator, tokenFees, usdgFees)`.
 

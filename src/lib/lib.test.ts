@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  changePassword, clearVault, loadVault, markBackedUp, newWallet, parseImport,
-  passwordChecks, phraseOf, saveVault, unlockVault, VAULT_KEY, type KV,
-} from './vault';
+import { Wallet } from 'ethers';
+import { clearVault, loadVault, phraseOf, unlockVault, VAULT_KEY } from './vault';
+import type { KV } from './kv';
 import { checkAddress, formatAmount, parseAmount, shortAddr } from './format';
 import { scrubUrl } from './analytics';
 
@@ -25,56 +24,28 @@ function memKV(): KV & { data: Map<string, string> } {
 const TEST_PHRASE = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 const TEST_ADDR = '0x9858EfFD232B4033E47d90003D41EC34EcaEda94';
 
-describe('vault', () => {
-  it('creates a 12-word wallet', () => {
-    const w = newWallet();
-    expect(phraseOf(w)?.split(' ')).toHaveLength(12);
-  });
-
-  it('imports phrase and private key, rejects junk', () => {
-    expect(parseImport(TEST_PHRASE)?.address).toBe(TEST_ADDR);
-    expect(parseImport('  ' + TEST_PHRASE.toUpperCase().replace(/ /g, '   ') + ' ')?.address).toBe(TEST_ADDR);
-    const pk = '0x' + '11'.repeat(32);
-    expect(parseImport(pk)?.address).toBeTruthy();
-    expect(parseImport(pk.slice(2))?.address).toBe(parseImport(pk)?.address);
-    expect(parseImport('hello world')).toBeNull();
-    expect(parseImport(TEST_PHRASE.replace('about', 'abandon'))).toBeNull(); // bad checksum
-    expect(parseImport('')).toBeNull();
-  });
-
-  it('never stores the plain key, and unlocks only with the right password', async () => {
+describe('legacy wallet export', () => {
+  it('unlocks a v0.1 keystore only with the right password, then removes it', async () => {
     const kv = memKV();
-    const w = parseImport(TEST_PHRASE)!;
-    const rec = await saveVault(w, 'correct horse 1', { backedUp: false }, undefined, kv);
-    const raw = kv.data.get(VAULT_KEY)!;
-    expect(raw).not.toContain(w.privateKey.slice(2));
-    expect(raw).not.toContain('abandon');
-    expect(rec.kind).toBe('mnemonic');
+    const w = Wallet.fromPhrase(TEST_PHRASE);
+    const keystore = await w.encrypt('correct horse 1');
+    kv.setItem(VAULT_KEY, JSON.stringify({ v: 1, address: w.address, keystore, kind: 'mnemonic', backedUp: false, createdAt: 1 }));
+    kv.setItem('holdr.txs.v1', '[]');
     expect(loadVault(kv)?.address).toBe(TEST_ADDR);
 
     const back = await unlockVault('correct horse 1', undefined, kv);
-    expect(back.address).toBe(TEST_ADDR);
     expect(phraseOf(back)).toBe(TEST_PHRASE);
     await expect(unlockVault('wrong pass 1', undefined, kv)).rejects.toThrow();
-  }, 30000);
 
-  it('changes password and keeps backup flag', async () => {
-    const kv = memKV();
-    await saveVault(parseImport(TEST_PHRASE)!, 'oldpass11', { backedUp: false }, undefined, kv);
-    markBackedUp(kv);
-    await changePassword('oldpass11', 'newpass22', undefined, kv);
-    await expect(unlockVault('oldpass11', undefined, kv)).rejects.toThrow();
-    expect((await unlockVault('newpass22', undefined, kv)).address).toBe(TEST_ADDR);
-    expect(loadVault(kv)?.backedUp).toBe(true);
     clearVault(kv);
     expect(loadVault(kv)).toBeNull();
+    expect(kv.getItem('holdr.txs.v1')).toBeNull();
   }, 30000);
 
-  it('checks password rules', () => {
-    expect(passwordChecks('abc').ok).toBe(false);
-    expect(passwordChecks('abcdefgh').ok).toBe(false);
-    expect(passwordChecks('abcdefg1').ok).toBe(true);
-    expect(passwordChecks('abcdefg1abcd').score).toBe(3);
+  it('ignores corrupt records', () => {
+    const kv = memKV();
+    kv.setItem(VAULT_KEY, '{oops');
+    expect(loadVault(kv)).toBeNull();
   });
 });
 

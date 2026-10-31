@@ -1,6 +1,6 @@
 # Admin controls
 
-This page lists exactly what Holdr's admin can and can't do. Everything here is enforced by the contracts, not by promises.
+This page lists exactly what Holdrs' admin can and can't do. Everything here is enforced by the contracts, not by promises.
 
 ## Who the admin is
 
@@ -37,6 +37,6 @@ Even with the 48-hour delay, new rules must stay within these limits:
 | Creator first buy | Up to 100,000,000 tokens |
 | Launch fee | Up to 0.1 ETH |
 
-## Genesis NFT admin
+## Characters
 
-The Genesis admin opens the five waves (each wave's start can be set at most a year ahead and moved only before it starts), pauses new mints, rotates the mint-permit key, updates the metadata link and sets royalties up to 2.5%. It can't mint for itself, change odds or change any revealed character.
+Characters aren't NFTs and have no contract. They are kept with points on the Holdrs servers. See [Characters](/docs/characters).

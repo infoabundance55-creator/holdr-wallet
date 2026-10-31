@@ -57,7 +57,7 @@ export default function DocsApp() {
 
   // title, analytics, jump to #hash
   useEffect(() => {
-    document.title = `${page.title} · Holdr Docs`;
+    document.title = `${page.title} · Holdrs Docs`;
     docsPageView(`/docs/${page.slug}`);
     const hash = decodeURIComponent(window.location.hash.slice(1));
     if (hash) document.getElementById(hash)?.scrollIntoView();
@@ -155,11 +155,11 @@ export default function DocsApp() {
         </button>
         <a className="brand" href="/docs/introduction" onClick={(e) => (e.preventDefault(), go('introduction'))}>
           <Logo />
-          <span>Holdr</span>
+          <span>Holdrs</span>
           <span className="tag">Docs</span>
         </a>
         <span className="net">Testnet</span>
-        <a className="cta" href="/">Open wallet</a>
+        <a className="cta" href="/">Open app</a>
       </header>
 
       <div className="layout">

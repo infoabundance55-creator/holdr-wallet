@@ -10,7 +10,7 @@ Every buy and sell on the curve credits your share in USDG. Claim it at any time
 
 The Uniswap pool collects its 1% fee in both the token and USDG.
 
-1. **Collect.** Anyone can call `collectFees(token)` on the liquidity locker. It pulls the fees from Uniswap and credits 70% to the creator and 30% to Holdr, in each currency.
+1. **Collect.** Anyone can call `collectFees(token)` on the liquidity locker. It pulls the fees from Uniswap and credits 70% to the creator and 30% to Holdrs, in each currency.
 2. **Claim.** You claim each currency separately (`claim(currency, to)`).
 
 ## Handing over the creator role

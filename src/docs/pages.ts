@@ -17,7 +17,7 @@ const ORDER: [group: string, slugs: string[], soon?: boolean][] = [
   ['Wallet', ['wallet-setup', 'wallet-security']],
   ['Launchpad', ['launch-a-token', 'bonding-curve', 'fees', 'anti-snipe', 'graduation', 'creator-earnings', 'launchpad-risks']],
   ['Points · Season 1', ['points', 'house-tiers'], true],
-  ['Genesis & Moon Jump', ['genesis-characters', 'moon-jump'], true],
+  ['Characters & Moon Jump', ['characters', 'moon-jump'], true],
   ['Security & transparency', ['contracts', 'security-reviews', 'admin-controls']],
   ['Developers', ['contract-reference', 'glossary', 'faq']],
 ];

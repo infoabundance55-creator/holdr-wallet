@@ -1,16 +1,16 @@
 # Security reviews
 
-Holdr hasn't had a paid audit yet. Until it can fund one, it combines several free checks, publishes the results, and limits risk at launch.
+Holdrs hasn't had a paid audit yet. Until it can fund one, it combines several free checks, publishes the results, and limits risk at launch.
 
 ## What has been done
 
-| Check | Launchpad | Genesis NFT |
-|---|---|---|
-| Independent AI security review | Done: no critical or high issues; 1 medium and the lows fixed | Done: no critical or high issues; 2 medium and 5 lows fixed |
-| Automated tests (Foundry) | 158 unit, fuzz and invariant tests, run against the real Uniswap v4 PoolManager | 60 unit, fuzz and invariant tests |
-| Line coverage | 100% | 100% |
-| Static analysis (Slither) | Only expected notes remain | Only expected notes remain |
-| Public testnet trial | Full flow run on Robinhood testnet: launch, trade, graduate, Uniswap swaps, fees | After the launchpad |
+| Check | Launchpad |
+|---|---|
+| Independent AI security review | Done: no critical or high issues; 1 medium and the lows fixed |
+| Automated tests (Foundry) | 200 unit, fuzz and invariant tests, run against the real Uniswap v4 PoolManager |
+| Line coverage | 100% |
+| Static analysis (Slither) | Only expected notes remain |
+| Public testnet trial | Full flow run on Robinhood testnet: launch, trade, graduate, Uniswap swaps, fees |
 
 ## What the invariant tests check
 
