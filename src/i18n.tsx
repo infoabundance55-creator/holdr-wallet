@@ -204,6 +204,10 @@ const zh = {
   ceErrFirstMax: '首次买入超过上限，请减少金额。', ceErrFirstSlip: '首次买入价格有变，请再试一次。', ceErrUsdg: 'USDG 不够首次买入。', ceErrAllowance: 'USDG 授权不够，请再试一次。',
   ceFailed: '发币失败', ceStPending: '发币中，等待链上确认…',
   ceLive: '${sym} 上线了！', ceGoToken: '前往币页', ceAgain: '再发一个币',
+  ceMax: '最多', ceFirst: '你的首次买入', ceFirstMax: '选填 · 最多约 {n} USDG（5%）', ceFirstGet: '约可得', ceFirstBad: '金额格式不对。', ceFirstOver: '首次买入最多 {n} USDG。',
+  ceFirstNote: '和发币同一笔交易，比所有人先买，不收防狙击附加费。要先授权这笔 USDG。', ceUsdgBal: '你的 Test USDG：{n}',
+  ceLiveKicker: '已在 Robinhood Chain 上线', ceLiveSub: '现在就分享出去。每一笔交易，你都拿交易额的 0.7%。', ceLiveFirst: '你的首次买入：{amt} {sym}',
+  ceLivePts: 'S1 开始后：有 5 个不同钱包买入，就有 +1,000 发币积分。', ceShareX: '分享到 X',
 };
 
 export type Key = keyof typeof zh;
@@ -403,6 +407,10 @@ const en: Record<Key, string> = {
   ceErrFirstMax: 'First buy is over the limit. Lower the amount.', ceErrFirstSlip: 'First-buy price changed. Try again.', ceErrUsdg: 'Not enough USDG for the first buy.', ceErrAllowance: 'USDG approval too low. Try again.',
   ceFailed: 'Launch failed', ceStPending: 'Launching, waiting for the chain…',
   ceLive: '${sym} is live!', ceGoToken: 'Go to token page', ceAgain: 'Launch another',
+  ceMax: 'Max', ceFirst: 'Your first buy', ceFirstMax: 'optional · max ≈ {n} USDG (5%)', ceFirstGet: 'You get ≈', ceFirstBad: "That amount doesn't look right.", ceFirstOver: 'First buy is {n} USDG max.',
+  ceFirstNote: 'Goes in with the launch, before anyone else, and skips the launch surcharge. You approve this USDG first.', ceUsdgBal: 'Your test USDG: {n}',
+  ceLiveKicker: 'Live on Robinhood Chain', ceLiveSub: 'Share it now. Every trade pays you 0.7% of its size.', ceLiveFirst: 'Your first buy: {amt} {sym}',
+  ceLivePts: 'Once Season 1 starts: +1,000 launch points after 5 different wallets buy.', ceShareX: 'Share on X',
 };
 
 export const DICTS: Record<Lang, Record<Key, string>> = { zh, en };

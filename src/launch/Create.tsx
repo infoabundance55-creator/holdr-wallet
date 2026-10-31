@@ -1,19 +1,21 @@
-import { useCallback, useMemo, useState } from 'react';
-import { formatEther } from 'viem';
-import { useBalance } from 'wagmi';
-import { Icon } from '../components/ui';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { formatEther, parseUnits, type Address } from 'viem';
+import { useBalance, useReadContract } from 'wagmi';
+import { copyText, Icon } from '../components/ui';
 import { useIsDesktop } from '../lib/media';
 import { useNav } from '../nav';
 import { useApp } from '../state';
 import { ConnectWallet, useWallet } from '../wallet/ConnectWallet';
-import { capAfter, checkDesc, checkName, checkSymbol, DESC_MAX, FIELD_KEY, normLink, normSymbol, type FieldErr, type LinkKind } from './create';
+import { capAfter, maxFirstBuy, pctSupply, quoteFirstBuy, shareOnX, checkDesc, checkName, checkSymbol, DESC_MAX, FIELD_KEY, normLink, normSymbol, type FieldErr, type LinkKind } from './create';
 import { usd as fmtUsd } from './fmt';
 import { ImageUpload } from './ImageUpload';
+import { erc20Abi } from './abi';
 import { ART, Bar, TokenAvatar } from './parts';
+import { fmtRaw, withSlippage } from './trade';
 import { buildMetaURI } from './tokenImage';
 import { useCreator, useLaunchConfig, type Launched } from './useCreate';
 import { useLaunch } from './useLaunch';
-import { useChainCtx } from './useTrade';
+import { useChainCtx, useTrader } from './useTrade';
 
 type ImgState = 'empty' | 'busy' | 'done' | 'error';
 
@@ -26,6 +28,9 @@ export function Create() {
   const { address, isConnected, onSiteChain } = useWallet();
   const { fee, curve, paused, error: cfgError } = useLaunchConfig();
   const { st, create, busy, reset } = useCreator(ix);
+  const { faucet, busy: fauceting } = useTrader(ix);
+  const usdgBal = useReadContract({ chainId, address: c?.usdg as Address | undefined, abi: erc20Abi, functionName: 'balanceOf', args: address ? [address] : undefined, query: { enabled: !!address && !!c, refetchInterval: 15_000 } });
+  const [firstRaw, setFirstRaw] = useState('');
   const eth = useBalance({ chainId, address, query: { enabled: !!address && !!c, refetchInterval: 15_000 } });
 
   const [name, setName] = useState('');
@@ -65,16 +70,29 @@ export function Create() {
   const openCap = curve ? capAfter(curve, 0n, 0n) : null;
   const symShown = sym || 'TICKER';
 
+  // Creator's first buy: same tx as the launch, no surcharge, capped at firstBuyMaxTokens (≈5%).
+  let firstBuy = 0n;
+  try { firstBuy = firstRaw ? parseUnits(firstRaw, 6) : 0n; } catch { firstBuy = -1n; }
+  const maxBuy = curve ? maxFirstBuy(curve) : 0n;
+  const fq = curve && firstBuy > 0n ? quoteFirstBuy(curve, firstBuy) : null;
+  const firstOver = firstBuy > maxBuy && curve != null;
+  const usdgLow = firstBuy > 0n && usdgBal.data != null && (usdgBal.data as bigint) < firstBuy;
+  const firstErr = firstBuy < 0n ? t('ceFirstBad') : firstOver ? t('ceFirstOver', { n: fmtRaw(maxBuy, 6) }) : usdgLow ? t('ceErrUsdg') : null;
+  const capNow = curve ? capAfter(curve, fq?.toCurve ?? 0n, fq?.tokensOut ?? 0n) : null;
+  const progNow = curve && fq ? Number(fq.toCurve) / Number(curve.gradThreshold) : 0;
+  const payUsdg = firstBuy > 0n ? ` + ${fmtRaw(firstBuy, 6)} USDG` : '';
+
   let blocker: string | null = null;
   if (paused) blocker = t('ceErrPaused');
   else if (imgState === 'busy') blocker = t('ceImgWait');
   else if (imgState === 'error') blocker = t('ceImgFix');
   else if (ethLow && onSiteChain) blocker = t('ceErrEth');
+  else if (firstErr) blocker = firstErr;
 
   const onLaunch = () => {
     setTried(true);
     if (!valid || blocker || fee == null) return;
-    void create({ name: name.trim(), symbol: sym, metadataURI: metaURI, fee, firstBuy: 0n, minTokensOut: 0n, expectTokens: 0n });
+    void create({ name: name.trim(), symbol: sym, metadataURI: metaURI, fee, firstBuy: fq ? firstBuy : 0n, minTokensOut: fq ? withSlippage(fq.tokensOut, 50) : 0n, expectTokens: fq?.tokensOut ?? 0n });
   };
 
   const field = (k: string, label: string, input: React.ReactNode, extra?: React.ReactNode) => (
@@ -118,6 +136,25 @@ export function Create() {
           </div>
         ))}
       </fieldset>
+      <section className="cr-first" aria-labelledby="cr-first-l">
+        <div className="cr-lab"><label id="cr-first-l" htmlFor="cr-first">{t('ceFirst')}</label><span className="cr-opt">{t('ceFirstMax', { n: curve ? fmtRaw(maxBuy, 6) : '…' })}</span></div>
+        <div className={'cr-in cr-amt' + (firstErr ? ' bad' : '')}>
+          <input id="cr-first" inputMode="decimal" placeholder="0" value={firstRaw} disabled={busy} autoComplete="off"
+            onChange={(e) => setFirstRaw(e.target.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1'))} />
+          <span>USDG</span>
+        </div>
+        <div className="tp-quick" role="group" aria-label={t('ceFirst')}>
+          {(['0', '50', '100', 'max'] as const).map((v) => {
+            const val = v === 'max' ? (curve ? fmtRaw(maxBuy, 6).replace(/,/g, '') : '') : v === '0' ? '' : v;
+            return <button type="button" key={v} aria-pressed={firstRaw === val} disabled={busy || (v === 'max' && !curve)} onClick={() => setFirstRaw(val)}>{v === 'max' ? t('ceMax') : v}</button>;
+          })}
+        </div>
+        {fq && <div className="cr-pay"><span>{t('ceFirstGet')}</span><b className="num">{fmtRaw(fq.tokensOut, 18, true)} {symShown} · {pctSupply(fq.tokensOut).toFixed(2)}%</b></div>}
+        {firstErr && <span className="cr-err" role="alert">{firstErr}</span>}
+        {usdgLow && c.usdgFaucet && <button type="button" className="cr-link" onClick={() => faucet()} disabled={fauceting}>{fauceting ? '…' : t('getUsdg')}</button>}
+        {address && usdgBal.data != null && <span className="cr-note">{t('ceUsdgBal', { n: fmtRaw(usdgBal.data as bigint, 6) })}</span>}
+        <span className="cr-note">{t('ceFirstNote')}</span>
+      </section>
     </form>
   );
 
@@ -133,8 +170,8 @@ export function Create() {
           </div>
         </div>
         {desc.trim() && <p className="cr-card-desc">{desc.trim()}</p>}
-        <div className="cr-kv"><span>MARKET CAP</span><b className="num">{openCap != null ? fmtUsd(openCap) : '—'}</b></div>
-        <div className="cr-bar"><Bar value={0} tone="grey" /><span className="num">0%</span></div>
+        <div className="cr-kv"><span>MARKET CAP</span><b className="num">{capNow != null ? fmtUsd(capNow) : '—'}</b></div>
+        <div className="cr-bar"><Bar value={progNow} tone="grey" /><span className="num">{(progNow * 100).toFixed(progNow > 0 && progNow < 0.1 ? 1 : 0)}%</span></div>
       </div>
     </section>
   );
@@ -155,10 +192,10 @@ export function Create() {
     </section>
   );
 
-  const label = !onSiteChain ? t('switchTo') : t('ceLaunchBtn', { sym: sym || '' });
+  const label = !onSiteChain ? t('switchTo') : (sym ? t('ceLaunchBtn', { sym }) : t('createTitle'));
   const submit = (
     <section className="cr-go">
-      <div className="cr-pay"><span>{t('cePayNow')}</span><b className="num">{feeEth} ETH + gas</b></div>
+      <div className="cr-pay"><span>{t('cePayNow')}</span><b className="num">{feeEth} ETH{payUsdg} + gas</b></div>
       {ethLow && onSiteChain && (
         <div className="tp-warn"><Icon name="info" size={16} /><span>{t('ceEthLow', { n: feeEth })} {network.faucet && <a href={network.faucet} target="_blank" rel="noopener noreferrer">{t('getEth')} ↗</a>}</span></div>
       )}
@@ -167,12 +204,12 @@ export function Create() {
       {!isConnected ? (
         <div className="tp-connect"><ConnectWallet /></div>
       ) : (
-        <button className={'tp-go ' + (!onSiteChain ? 'gold' : 'b gold')} onClick={onLaunch} disabled={busy || fee == null || (!!blocker && onSiteChain) || paused}>
+        <button className={'tp-go gold'} onClick={onLaunch} disabled={busy || fee == null || (!!blocker && onSiteChain) || paused}>
           {busy && <span className="spin" aria-hidden="true" />}{label}
         </button>
       )}
       {tried && !valid && <span className="cr-err center" role="alert">{t('ceFixFields')}</span>}
-      {blocker && onSiteChain && isConnected && !paused && !ethLow && <span className="cr-note center">{blocker}</span>}
+      {blocker && onSiteChain && isConnected && !paused && !ethLow && !firstErr && <span className="cr-note center">{blocker}</span>}
       {status()}
       <span className="cr-note center">{t('ceFinal')}</span>
     </section>
@@ -222,17 +259,38 @@ export function Create() {
   }
 }
 
-/** Shown after a successful launch. */
+/** Shown after a successful launch (design v2 M6). */
 function LaunchedScreen({ r, onAgain }: { r: Launched; onAgain: () => void }) {
   const { t, network } = useApp();
   const nav = useNav();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+  const short = `${r.token.slice(0, 6)}…${r.token.slice(-4)}`;
+  const copy = async () => {
+    if (await copyText(r.token)) { setCopied(true); window.setTimeout(() => setCopied(false), 1800); }
+  };
   return (
     <div className="narrow cr-done">
-      <TokenAvatar address={r.token} symbol={r.symbol} uri={r.metadataURI} size={72} />
+      <div className="cr-done-art" aria-hidden="true">
+        <span className="disc" />
+        <img className="coin c1" src={ART.coin} alt="" />
+        <img className="coin c2" src={ART.coin} alt="" />
+        <img className="coin c3" src={ART.coin} alt="" />
+        <img className="hero" src={ART.frog} alt="" />
+        <span className="tok"><TokenAvatar address={r.token} symbol={r.symbol} uri={r.metadataURI} size={72} /></span>
+      </div>
+      <span className="kicker up">{t('ceLiveKicker')}</span>
       <h1>{t('ceLive', { sym: r.symbol })}</h1>
-      <a className="cr-note" href={`${network.explorer}/tx/${r.hash}`} target="_blank" rel="noopener noreferrer">{t('viewTx')}</a>
-      <button className="tp-go gold" onClick={() => nav.push({ name: 'token', token: r.token })}>{t('ceGoToken')}</button>
-      <button className="cr-again" onClick={onAgain}>{t('ceAgain')}</button>
+      <p>{t('ceLiveSub')}</p>
+      {r.firstTokens > 0n && <p className="cr-note">{t('ceLiveFirst', { amt: fmtRaw(r.firstTokens, 18, true), sym: r.symbol })}</p>}
+      <button className="cr-ca" onClick={copy} aria-label={`${t('copyAddress')} ${r.token}`}><span className="num">{short}</span><Icon name={copied ? 'check' : 'copy'} size={14} /></button>
+      <div className="cr-pts"><img src={ART.coin} alt="" /><span>{t('ceLivePts')}</span></div>
+      <div className="cr-done-acts">
+        <a className="tp-go gold" href={shareOnX(r.symbol, r.token, window.location.origin)} target="_blank" rel="noopener noreferrer">{t('ceShareX')}</a>
+        <button className="tp-go cr-ghost" onClick={() => nav.push({ name: 'token', token: r.token })}>{t('ceGoToken')}</button>
+        <a className="cr-note" href={`${network.explorer}/tx/${r.hash}`} target="_blank" rel="noopener noreferrer">{t('viewTx')}</a>
+        <button className="cr-again" onClick={onAgain}>{t('ceAgain')}</button>
+      </div>
     </div>
   );
 }
