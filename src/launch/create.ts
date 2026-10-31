@@ -155,6 +155,6 @@ export function explainCreate(e: unknown): ErrMsg {
 
 /** "Just launched $SYM" post for X (text only; the X intent opens with it filled in). */
 export function shareOnX(symbol: string, token: string, siteUrl: string): string {
-  const text = `I just launched $${symbol} on Holdrs 🌙\n\nCA: ${token}\n\n${siteUrl}`;
+  const text = `I just launched $${symbol} on Holdrs 🌙\n\nCA: ${token}\n\n${siteUrl}/token/${token}`;
   return `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
 }

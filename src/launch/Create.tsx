@@ -4,6 +4,7 @@ import { useBalance, useReadContract } from 'wagmi';
 import { copyText, Icon } from '../components/ui';
 import { useIsDesktop } from '../lib/media';
 import { useNav } from '../nav';
+import { tokenUrl } from '../routes';
 import { useApp } from '../state';
 import { ConnectWallet, useWallet } from '../wallet/ConnectWallet';
 import { capAfter, maxFirstBuy, pctSupply, quoteFirstBuy, shareOnX, checkDesc, checkName, checkSymbol, DESC_MAX, FIELD_KEY, normLink, normSymbol, type FieldErr, type LinkKind } from './create';
@@ -261,9 +262,10 @@ export function Create() {
 
 /** Shown after a successful launch (design v2 M6). */
 function LaunchedScreen({ r, onAgain }: { r: Launched; onAgain: () => void }) {
-  const { t, network } = useApp();
+  const { t, network, toast } = useApp();
   const nav = useNav();
   const [copied, setCopied] = useState(false);
+  const link = tokenUrl(r.token);
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const short = `${r.token.slice(0, 6)}…${r.token.slice(-4)}`;
   const copy = async () => {
@@ -284,6 +286,9 @@ function LaunchedScreen({ r, onAgain }: { r: Launched; onAgain: () => void }) {
       <p>{t('ceLiveSub')}</p>
       {r.firstTokens > 0n && <p className="cr-note">{t('ceLiveFirst', { amt: fmtRaw(r.firstTokens, 18, true), sym: r.symbol })}</p>}
       <button className="cr-ca" onClick={copy} aria-label={`${t('copyAddress')} ${r.token}`}><span className="num">{short}</span><Icon name={copied ? 'check' : 'copy'} size={14} /></button>
+      <button className="cr-ca cr-link" onClick={async () => { if (await copyText(link)) toast(t('linkCopied')); }} aria-label={t('copyLink')}>
+        <Icon name="share" size={14} /><span className="num">{link.replace(/^https?:\/\//, '').replace(r.token, short)}</span>
+      </button>
       <div className="cr-pts"><img src={ART.coin} alt="" /><span>{t('ceLivePts')}</span></div>
       <div className="cr-done-acts">
         <a className="tp-go gold" href={shareOnX(r.symbol, r.token, window.location.origin)} target="_blank" rel="noopener noreferrer">{t('ceShareX')}</a>

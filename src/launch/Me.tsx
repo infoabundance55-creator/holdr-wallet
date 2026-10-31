@@ -19,12 +19,13 @@ import { fmtRaw } from './trade';
 import { feesTokens, feesUsdg, hasFees, useClaimFees, useCreatorFees, type CreatorFees } from './useFees';
 import { useLaunch } from './useLaunch';
 import { useChainCtx, useTrader } from './useTrade';
+import { CHARS, houseImg, LEVELS, levelFor } from './points';
 import './launch.css';
 
 type T = ReturnType<typeof useApp>['t'];
 const ACT_PAGE = 10;
 
-/** "Me": wallet, holdings (P&L, hold-day boost), tokens I launched (claim fees), activity. Points and characters are "coming soon". */
+/** "Me": wallet, holdings (P&L, hold-day boost), tokens I launched (claim fees), activity, level card (characters by level). */
 export function Me() {
   const { t } = useApp();
   const nav = useNav();
@@ -65,8 +66,7 @@ export function Me() {
             <ConnectWallet />
             {!HAS_WALLETCONNECT && <span className="small muted">{t('wcMissing')}</span>}
           </section>
-          <PointsSoon />
-          <CharsSoon />
+          <LevelCard />
           <Settings />
         </div>
       </div>
@@ -83,7 +83,7 @@ export function Me() {
     <>
       <Holdings hold={hold} loading={loading} desktop={desktop} t={t} />
       <Launched mine={mine} ix={ix} now={now} desktop={desktop} />
-      {!desktop && <><PointsSoon /><CharsSoon /></>}
+      {!desktop && <LevelCard />}
       <ActivityList acts={acts} loading={loading} now={now} />
     </>
   );
@@ -97,7 +97,7 @@ export function Me() {
           <WalletCard address={address} total={total} ix={ix} desktop />
           <div className="me-cols">
             <div className="me-main">{main}</div>
-            <aside className="me-aside"><PointsSoon /><CharsSoon /><Settings /></aside>
+            <aside className="me-aside"><LevelCard /><Settings /></aside>
           </div>
         </>
       ) : (
@@ -312,35 +312,48 @@ function LaunchCard({ tk, now, fees, feesLoading, desktop, claimState, busy, onC
   );
 }
 
-function PointsSoon() {
-  const { t } = useApp();
+/**
+ * Level card (design v2 M7 / D4): level, house, boost, characters by level.
+ * Points start with S1 (work 5), so everyone shows level 1 for now.
+ */
+function LevelCard() {
+  const { t, prefs } = useApp();
+  const zh = prefs.lang === 'zh';
+  const total = 0; // from the points backend once S1 starts
+  const lv = levelFor(total);
+  const next = LEVELS[lv.lvl];
+  const pct = (b: number) => Math.round(b * 100);
+  const short = (n: number) => (n >= 1e6 ? `${n / 1e6}M` : `${n / 1e3}K`);
   return (
-    <section className="me-soon" aria-label={t('mePoints')}>
-      <img src={ART.coin} alt="" className="coin" />
-      <div className="t">
-        <span className="lp-pill warn">{t('comingSoon')}</span>
-        <b>{t('mePoints')}</b>
-        <span>{t('mePointsSub')}</span>
+    <section className="lv" aria-label={t('meChars')}>
+      <div className="lv-top">
+        <img className="me-img" src={ART[lv.char]} alt={CHARS.find((c) => c.id === lv.char)?.name} />
+        <div className="id">
+          <span className="kicker gold">{t('lvKicker', { n: lv.lvl, house: zh ? lv.houseZh : lv.house.toUpperCase() })}</span>
+          <b>{lv.title}</b>
+          <span className="pill">{t('lvBoost', { p: pct(lv.boost) })}</span>
+        </div>
+        <img className="house" src={houseImg(lv.lvl)} alt="" />
       </div>
-    </section>
-  );
-}
-
-function CharsSoon() {
-  const { t } = useApp();
-  const chars: [string, string, Parameters<T>[0]][] = [
-    ['Degen Raccoon', ART.raccoon, 'boostTrade'], ['Moon Frog', ART.frog, 'boostLaunch'],
-    ['Laser Bull', ART.bull, 'boostHold'], ['The Anon', ART.anon, 'boostAll'],
-  ];
-  return (
-    <section className="me-chars" aria-label={t('meChars')}>
-      <div className="h"><b>{t('meChars')}</b><span className="lp-pill warn">{t('comingSoon')}</span></div>
-      <div className="g">
-        {chars.map(([name, img, k]) => (
-          <div key={name}><img src={img} alt={name} /><span>{t(k)}</span></div>
-        ))}
+      <div className="lv-body">
+        <div className="hc-row"><b className="num" style={{ fontSize: 14 }}>{total.toLocaleString('en-US')} pts</b><span className="small muted">{t('lvNext', { n: next.lvl, pts: next.min.toLocaleString('en-US') })}</span></div>
+        <div className="hc-bar" style={{ background: 'var(--surface-2)' }}><i style={{ width: '3%' }} /></div>
+        <div className="soon"><span className="lp-pill warn">{t('comingSoon')}</span><span>{t('lvS1')}</span></div>
+        <ul className="lv-chars" aria-label={t('lvChars')}>
+          {CHARS.map((c) => {
+            const open = total >= c.min;
+            return (
+              <li key={c.id} className={(open ? 'open' : 'lock') + (c.id === lv.char ? ' on' : '')}>
+                <img src={ART[c.id]} alt="" />
+                <span className="n">{zh ? c.nameZh : c.name}</span>
+                <span className="b">+{pct(c.boost)}%</span>
+                <span className="m">{open ? t('lvUnlocked') : t('lvUnlock', { pts: short(c.min) })}</span>
+              </li>
+            );
+          })}
+        </ul>
+        <p>{t('lvRule')}</p>
       </div>
-      <p>{t('meCharsSub')}</p>
     </section>
   );
 }

@@ -56,6 +56,26 @@
     {
       "source": "/docs/:path*",
       "destination": "/docs/index.html"
+    },
+    {
+      "source": "/token/:addr",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/create",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/points",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/me",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/me/legacy",
+      "destination": "/index.html"
     }
   ],
   "redirects": [

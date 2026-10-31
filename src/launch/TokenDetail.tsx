@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { copyText, Icon, Note } from '../components/ui';
 import { shortAddr } from '../lib/format';
 import { useNav } from '../nav';
+import { tokenUrl } from '../routes';
 import { useApp } from '../state';
 import { useIsDesktop } from '../lib/media';
 import { ConnectWallet, useWallet } from '../wallet/ConnectWallet';
@@ -125,6 +126,25 @@ function TradeSheet({ tk, onClose, children }: { tk: LaunchToken; onClose: () =>
   );
 }
 
+/** Shares /token/0x… : the phone share sheet when there is one, else copies the link. */
+function ShareBtn({ tk }: { tk: LaunchToken }) {
+  const { t, toast } = useApp();
+  const url = tokenUrl(tk.token);
+  const onClick = async () => {
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void>; canShare?: (d: ShareData) => boolean };
+    const data = { title: `$${tk.symbol} on Holdrs`, url };
+    if (nav.share && window.matchMedia('(pointer: coarse)').matches) {
+      try { await nav.share(data); return; } catch (e) { if ((e as Error).name === 'AbortError') return; }
+    }
+    if (await copyText(url)) toast(t('linkCopied'));
+  };
+  return (
+    <button className="td-chip round" onClick={onClick} aria-label={t('copyLink')} title={t('share')}>
+      <Icon name="share" size={15} />
+    </button>
+  );
+}
+
 function Head({ tk, now, desktop }: { tk: LaunchToken; now: number; desktop?: boolean }) {
   const { t, toast } = useApp();
   const meta = parseMeta(tk.metadataURI);
@@ -139,6 +159,7 @@ function Head({ tk, now, desktop }: { tk: LaunchToken; now: number; desktop?: bo
       <button className="td-chip" aria-label={`${t('copyContract')} ${shortAddr(tk.token)}`} onClick={async () => { if (await copyText(tk.token)) toast(t('copied')); }}>
         {shortAddr(tk.token, 6, 4)}<Icon name="copy" size={14} color="#8C95B0" />
       </button>
+      <ShareBtn tk={tk} />
       {socials.filter(([u]) => u).map(([u, label, icon]) => (
         <a key={label} className="td-chip round" href={u} target="_blank" rel="noopener noreferrer nofollow" aria-label={label}>{icon}</a>
       ))}
