@@ -76,6 +76,14 @@
     {
       "source": "/me/legacy",
       "destination": "/index.html"
+    },
+    {
+      "source": "/characters",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/play",
+      "destination": "/index.html"
     }
   ],
   "redirects": [

@@ -14,6 +14,10 @@ import { screen as trackScreen } from './lib/analytics';
 import { pathToRoute, routeToPath } from './routes';
 import { SearchProvider, useSearch } from './launch/search';
 import { useLaunch } from './launch/useLaunch';
+import { AccountProvider } from './account/AccountProvider';
+import { Characters } from './account/Characters';
+import { Play } from './account/Play';
+import { LevelUpGate } from './account/LevelUp';
 
 const TABS: [Tab, string, 'navDiscover' | 'navCreate' | 'navPoints' | 'navMe'][] = [
   ['discover', 'compass', 'navDiscover'], ['create', 'plusCircle', 'navCreate'], ['points', 'star', 'navPoints'], ['me', 'user', 'navMe'],
@@ -26,7 +30,7 @@ const depth = (): number => {
 };
 
 function Router() {
-  // The URL is the source of truth: /, /create, /points, /me, /me/legacy, /token/0x…
+  // The URL is the source of truth: /, /create, /points, /me, /me/legacy, /characters, /play, /token/0x…
   const [current, setCurrent] = useState<Route>(() => pathToRoute(window.location.pathname));
 
   useEffect(() => {
@@ -74,6 +78,8 @@ function Router() {
       break;
     case 'token': body = <TokenDetail token={current.token} />; break;
     case 'legacy': body = <LegacyWallet />; break;
+    case 'characters': body = <Characters />; break;
+    case 'play': body = <Play />; break;
   }
 
   return (
@@ -120,6 +126,7 @@ function Layout({ tab, mobileTopbar, children }: { tab: Tab | null; mobileTopbar
       </header>
       <NetworkBanner />
       <main className="page">{children}</main>
+      <LevelUpGate />
       {tab && (
         <>
           <div className="spacer-nav mobile-only" />
@@ -141,9 +148,11 @@ export default function App() {
   return (
     <AppProvider>
       <WalletProvider>
-        <SearchProvider>
-          <Router />
-        </SearchProvider>
+        <AccountProvider>
+          <SearchProvider>
+            <Router />
+          </SearchProvider>
+        </AccountProvider>
       </WalletProvider>
     </AppProvider>
   );

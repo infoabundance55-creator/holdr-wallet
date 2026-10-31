@@ -69,6 +69,8 @@
 .lp-mini b { font-size: 17px; }
 .lp-mini span.s { font-size: 13px; line-height: 1.35; color: var(--text-3); }
 .lp-mini img { height: 64px; width: auto; flex: none; }
+.lp-mini.link { font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.lp-mini.link:hover { border-color: var(--line-2); }
 
 /* Graduating soon */
 .lp-grads { padding-top: 22px; }

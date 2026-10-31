@@ -74,3 +74,15 @@ export function estimate(buyUsd: number, days: number, boost: number): Estimate 
   const progress = next ? (total - level.min) / (next.min - level.min) : 1;
   return { trade, hold, bonus, total, level, next, progress };
 }
+
+/** The character shown for a user: their chosen look, or their level's character. */
+export function lookFor(total: number, look: CharId | null): CharId {
+  return look ?? levelFor(total).char;
+}
+
+/** Progress (0–1) from this level to the next. */
+export function levelProgress(total: number): number {
+  const lv = levelFor(total);
+  const next = LEVELS[lv.lvl];
+  return next ? Math.min(1, (total - lv.min) / (next.min - lv.min)) : 1;
+}
