@@ -1,6 +1,6 @@
 # Contract addresses
 
-All Holdr contracts are open source. Check addresses here before you interact with anything.
+All Holdrs contracts are open source. Check addresses here before you interact with anything.
 
 ## Robinhood Chain testnet (46630)
 
@@ -16,7 +16,7 @@ Each launched token and its curve pool get their own addresses. The factory's `T
 
 ## Robinhood Chain mainnet (4663)
 
-Holdr's contracts are **not deployed on mainnet yet**. The launchpad will use these existing contracts:
+Holdrs' contracts are **not deployed on mainnet yet**. The launchpad will use these existing contracts:
 
 | Contract | Address |
 |---|---|

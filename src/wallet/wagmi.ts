@@ -17,7 +17,10 @@ export const CHAINS: Record<NetworkId, Chain> = {
 export const WC_PROJECT_ID: string = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
 export const HAS_WALLETCONNECT = WC_PROJECT_ID.length > 0;
 
-const APP = { appName: 'Holdr', appDescription: 'Fair-launch tokens on Robinhood Chain', appUrl: 'https://holdr-wallet.vercel.app', appIcon: 'https://holdr-wallet.vercel.app/icon.svg' };
+/** Where the site runs (holdrs.xyz in production, the preview URL on previews); WalletConnect checks it. */
+const SITE = typeof window !== 'undefined' ? window.location.origin : 'https://holdrs.xyz';
+
+const APP = { appName: 'Holdrs', appDescription: 'Fair-launch tokens on Robinhood Chain', appUrl: SITE, appIcon: `${SITE}/icon.svg` };
 
 // Coinbase smart wallets do not support Robinhood Chain; use the regular Coinbase Wallet app / extension.
 coinbaseWallet.preference = 'eoaOnly';

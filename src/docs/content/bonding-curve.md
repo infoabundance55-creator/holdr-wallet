@@ -1,6 +1,6 @@
 # Bonding curve and price
 
-Before graduation, every Holdr token trades against its own **curve pool** rather than an order book. The pool always quotes a price, so you can buy or sell at any time, and the price rises as more tokens are bought.
+Before graduation, every Holdrs token trades against its own **curve pool** rather than an order book. The pool always quotes a price, so you can buy or sell at any time, and the price rises as more tokens are bought.
 
 ## How the price works
 

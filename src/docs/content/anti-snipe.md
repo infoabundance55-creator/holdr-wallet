@@ -1,6 +1,6 @@
 # Anti-snipe
 
-Bots try to buy a new token in the very first seconds, before real people can, then sell to them at a higher price. Holdr makes that unprofitable with a **surcharge on buys in the first 5 seconds**, falling fast to zero.
+Bots try to buy a new token in the very first seconds, before real people can, then sell to them at a higher price. Holdrs makes that unprofitable with a **surcharge on buys in the first 5 seconds**, falling fast to zero.
 
 ## The schedule
 
@@ -17,7 +17,7 @@ Seconds are counted from the launch transaction.
 
 ## Where the surcharge goes
 
-The surcharge **stays in the token's own pool**. It adds USDG without releasing tokens, so it raises the price for everyone who holds the token. It also counts towards the 10,000 USDG graduation threshold. Holdr does not receive it.
+The surcharge **stays in the token's own pool**. It adds USDG without releasing tokens, so it raises the price for everyone who holds the token. It also counts towards the 10,000 USDG graduation threshold. Holdrs does not receive it.
 
 Because surcharges push the price up without selling tokens, a token that was sniped graduates with fewer than 800 million tokens sold. The unsold remainder is burned at graduation (see [Graduation](/docs/graduation)).
 

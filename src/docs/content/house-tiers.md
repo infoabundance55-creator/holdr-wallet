@@ -15,6 +15,6 @@ Your house in HODL Town shows your total points across all seasons. Upgrading ne
 
 ## In town
 
-- Your bound Genesis character stands at your door.
+- The character you picked stands at your door. Your house and your character level up together; see [Characters](/docs/characters).
 - See your neighbours on the same tier and say GM.
-- Later, tokens launched on Holdr will open shops in town.
+- Later, tokens launched on Holdrs will open shops in town.

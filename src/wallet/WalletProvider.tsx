@@ -36,7 +36,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           locale={locale}
           initialChain={CHAINS[prefs.network]}
           modalSize="compact"
-          appInfo={{ appName: 'Holdr', learnMoreUrl: 'https://holdr-wallet.vercel.app/docs' }}
+          appInfo={{ appName: 'Holdrs', learnMoreUrl: 'https://holdrs.xyz/docs' }}
         >
           {children}
         </RainbowKitProvider>

@@ -1,27 +1,36 @@
-# Wallet security
+# Stay safe
 
-Holdr is built so that Holdr itself never has access to your funds.
+Holdrs never holds your funds. Your own wallet keeps your keys and signs every transaction, so Holdrs can't move, freeze or recover anything.
 
-## Where your key lives
+## What connecting means
 
-- Your key is created on your device and stored there only as an **encrypted keystore** (scrypt + AES, the standard Ethereum keystore format), locked with your password.
-- Your recovery phrase, private key and password are never sent to Holdr or anyone else.
-- Holdr has no server that can sign for you, freeze your wallet or move your funds.
+- Connecting shares your **address** only. Holdrs can read public on-chain data for it, like anyone can.
+- Nothing happens without your approval. Every approval and trade opens in your wallet first.
+- Holdrs has no server that can sign for you.
 
-## What Holdr records
+## Approvals
 
-Holdr counts anonymous page views to see which screens people use. It never records keys, phrases, passwords, balances or wallet addresses.
+To buy, you approve USDG for the token's curve pool (or the factory, for a creator's first buy). Holdrs asks for **exactly the amount of that trade**, never an unlimited allowance. Selling on the curve needs no approval.
+
+Before you sign, check in your wallet:
+
+- the **network** is Robinhood Chain,
+- the **contract** is the token's pool or a Holdrs contract on [Contract addresses](/docs/contracts),
+- the **amount** matches what you typed.
 
 ## Protect yourself
 
-- **Nobody from Holdr will ever ask for your recovery phrase.** Anyone who does is trying to steal your funds.
-- Check that you are on the real Holdr site before you type your password.
-- Check the recipient address and amount on the review screen before you send. Blockchain transfers can't be reversed.
-- Use a strong unlock password and keep your device's own screen lock on.
-- Approvals: before approving a token for any app, make sure you trust it. Launchpad tokens show an unlimited allowance to their own curve pool; that one is expected and safe (see [Launchpad risks](/docs/launchpad-risks)).
+- **Nobody from Holdrs will ever ask for your recovery phrase.** Anyone who does is trying to steal your funds.
+- Check the address bar: the real site is **holdrs.xyz**.
+- Look-alike tokens can copy a name or ticker. Check the contract address on the token page.
+- Keep your wallet extension and app up to date, and lock your device.
+
+## What Holdrs records
+
+Holdrs counts anonymous page views to see which pages people use. It never records keys, phrases, passwords, balances or wallet addresses.
 
 ## Security of the code
 
-The wallet's code is open source. Every change runs automated tests, CodeQL code scanning, a dependency audit and an OpenSSF Scorecard check. The site sends strict security headers: it can only load its own scripts and talk to Robinhood Chain RPCs. It has not had a paid third-party audit yet.
+The code is open source. Every change runs automated tests, CodeQL code scanning, a dependency audit and an OpenSSF Scorecard check. The site sends strict security headers: it only loads its own scripts and only talks to Robinhood Chain RPCs and wallet-connection services. It has not had a paid third-party audit yet; see [Security reviews](/docs/security-reviews).
 
 Found a problem? See [SECURITY.md](https://github.com/infoabundance55-creator/holdr-wallet/blob/main/SECURITY.md) for how to report it privately.

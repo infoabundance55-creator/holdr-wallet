@@ -1,6 +1,6 @@
 # Launch a token
 
-Anyone can launch a token on Holdr. Every token gets exactly the same rules, fixed at launch: neither the creator nor Holdr can change them afterwards.
+Anyone can launch a token on Holdrs. Every token gets exactly the same rules, fixed at launch: neither the creator nor Holdrs can change them afterwards.
 
 > **Coming soon** The launchpad app is being built. The contracts are already live on testnet; see [Contract addresses](/docs/contracts).
 
@@ -21,7 +21,7 @@ Anyone can launch a token on Holdr. Every token gets exactly the same rules, fix
 | On the bonding curve | 800,000,000 |
 | Reserved for Uniswap | 200,000,000 |
 | Owner, minting, blacklist, transfer tax | None. The token has no owner and can never mint more. |
-| Trading fee | 1% on every buy and sell: 70% to you, 30% to Holdr |
+| Trading fee | 1% on every buy and sell: 70% to you, 30% to Holdrs |
 | Graduation | At 10,000 USDG raised |
 | Launch fee | 0.0005 ETH, plus gas |
 

@@ -57,5 +57,23 @@
       "source": "/docs/:path*",
       "destination": "/docs/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "holdr-wallet.vercel.app"
+        }
+      ],
+      "destination": "https://holdrs.xyz/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/docs/genesis-characters",
+      "destination": "/docs/characters",
+      "permanent": true
+    }
   ]
 }

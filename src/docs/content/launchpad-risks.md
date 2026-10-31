@@ -20,7 +20,7 @@ Graduated liquidity is locked forever. Nobody can rug it, but nobody can return 
 
 ## Pause
 
-Holdr's admin can pause **launches and buys** in an emergency. Selling and claiming fees always work. While paused, no token can graduate.
+Holdrs' admin can pause **launches and buys** in an emergency. Selling and claiming fees always work. While paused, no token can graduate.
 
 ## Things that are expected
 
