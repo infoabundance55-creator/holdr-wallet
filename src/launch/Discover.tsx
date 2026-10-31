@@ -145,8 +145,8 @@ export function Discover() {
           {banner}
           <div className="lp-side">
             <Mini title={t('miniPointsT')} text={t('miniPointsS')} img={ART.coin} h={48} pixel />
-            <Mini title={t('miniNftT')} text={t('miniNftS')} img={ART.anon} h={72} />
-            <Mini title={t('miniGameT')} text={t('miniGameS')} img={ART.frog} h={72} />
+            <Mini title={t('miniNftT')} text={t('miniNftS')} img={ART.anon} h={72} live onClick={() => nav.push({ name: 'characters' })} />
+            <Mini title={t('miniGameT')} text={t('miniGameS')} img={ART.frog} h={72} onClick={() => nav.push({ name: 'play' })} />
           </div>
         </section>
         {statGrid}
@@ -213,18 +213,19 @@ function Pager({ page, pages, setPage }: { page: number; pages: number; setPage:
   );
 }
 
-function Mini({ title, text, img, h, pixel }: { title: string; text: string; img: string; h: number; pixel?: boolean }) {
+function Mini({ title, text, img, h, pixel, live, onClick }: { title: string; text: string; img: string; h: number; pixel?: boolean; live?: boolean; onClick?: () => void }) {
   const { t } = useApp();
-  return (
-    <div className="lp-mini">
+  const inner = (
+    <>
       <div className="t">
-        <span className="lp-pill" style={{ alignSelf: 'flex-start', height: 20, fontSize: 10 }}>{t('comingSoon')}</span>
+        <span className={'lp-pill' + (live ? ' ok' : '')} style={{ alignSelf: 'flex-start', height: 20, fontSize: 10 }}>{live ? t('miniLive') : t('comingSoon')}</span>
         <b>{title}</b>
         <span className="s">{text}</span>
       </div>
       <img src={img} alt="" style={{ height: h, imageRendering: pixel ? 'pixelated' : undefined }} />
-    </div>
+    </>
   );
+  return onClick ? <button className="lp-mini link" onClick={onClick}>{inner}</button> : <div className="lp-mini">{inner}</div>;
 }
 
 function Body({ ix, ready, list, q, now, desktop, shown, page, onCreate }: {

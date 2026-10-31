@@ -19,7 +19,10 @@ import { fmtRaw } from './trade';
 import { feesTokens, feesUsdg, hasFees, useClaimFees, useCreatorFees, type CreatorFees } from './useFees';
 import { useLaunch } from './useLaunch';
 import { useChainCtx, useTrader } from './useTrade';
-import { CHARS, houseImg, LEVELS, levelFor } from './points';
+import { CHARS, houseImg, LEVELS, levelFor, levelProgress, lookFor } from './points';
+import { useAccountCtx } from '../account/context';
+import { SignInSteps, UsernameForm } from '../account/SignIn';
+import '../account/account.css';
 import './launch.css';
 
 type T = ReturnType<typeof useApp>['t'];
@@ -135,6 +138,7 @@ function WalletCard({ address, total, ix, desktop }: { address: Address; total: 
         <div className="me-addr">
           <b className="mono">{shortAddr(address)}</b>
           <span><i className="dot" aria-hidden="true" />{network.name}{connector?.name ? ` · ${connector.name}` : ''}</span>
+          <UserLine />
         </div>
         <button className="td-iconbtn" aria-label={t('copyAddress')} onClick={async () => { if (await copyText(address)) toast(t('copied')); }}><Icon name="copy" size={18} /></button>
         <a className="td-iconbtn" aria-label={t('viewExplorer')} href={`${network.explorer}/address/${address}`} target="_blank" rel="noopener noreferrer"><Icon name="external" size={18} /></a>
@@ -318,16 +322,19 @@ function LaunchCard({ tk, now, fees, feesLoading, desktop, claimState, busy, onC
  */
 function LevelCard() {
   const { t, prefs } = useApp();
+  const nav = useNav();
+  const { me } = useAccountCtx();
   const zh = prefs.lang === 'zh';
-  const total = 0; // from the points backend once S1 starts
+  const total = me?.total ?? 0; // 0 until the points backend (work 5) writes totals
   const lv = levelFor(total);
   const next = LEVELS[lv.lvl];
+  const look = lookFor(total, me?.look ?? null);
   const pct = (b: number) => Math.round(b * 100);
   const short = (n: number) => (n >= 1e6 ? `${n / 1e6}M` : `${n / 1e3}K`);
   return (
     <section className="lv" aria-label={t('meChars')}>
       <div className="lv-top">
-        <img className="me-img" src={ART[lv.char]} alt={CHARS.find((c) => c.id === lv.char)?.name} />
+        <img className="me-img" src={ART[look]} alt={CHARS.find((c) => c.id === look)?.name} />
         <div className="id">
           <span className="kicker gold">{t('lvKicker', { n: lv.lvl, house: zh ? lv.houseZh : lv.house.toUpperCase() })}</span>
           <b>{lv.title}</b>
@@ -336,14 +343,14 @@ function LevelCard() {
         <img className="house" src={houseImg(lv.lvl)} alt="" />
       </div>
       <div className="lv-body">
-        <div className="hc-row"><b className="num" style={{ fontSize: 14 }}>{total.toLocaleString('en-US')} pts</b><span className="small muted">{t('lvNext', { n: next.lvl, pts: next.min.toLocaleString('en-US') })}</span></div>
-        <div className="hc-bar" style={{ background: 'var(--surface-2)' }}><i style={{ width: '3%' }} /></div>
-        <div className="soon"><span className="lp-pill warn">{t('comingSoon')}</span><span>{t('lvS1')}</span></div>
+        <div className="hc-row"><b className="num" style={{ fontSize: 14 }}>{total.toLocaleString('en-US')} pts</b>{next && <span className="small muted">{t('lvNext', { n: next.lvl, pts: next.min.toLocaleString('en-US') })}</span>}</div>
+        <div className="hc-bar" style={{ background: 'var(--surface-2)' }}><i style={{ width: `${Math.max(3, levelProgress(total) * 100).toFixed(1)}%` }} /></div>
+        {total === 0 && <div className="soon"><span className="lp-pill warn">{t('comingSoon')}</span><span>{t('lvS1')}</span></div>}
         <ul className="lv-chars" aria-label={t('lvChars')}>
           {CHARS.map((c) => {
             const open = total >= c.min;
             return (
-              <li key={c.id} className={(open ? 'open' : 'lock') + (c.id === lv.char ? ' on' : '')}>
+              <li key={c.id} className={(open ? 'open' : 'lock') + (c.id === look ? ' on' : '')}>
                 <img src={ART[c.id]} alt="" />
                 <span className="n">{zh ? c.nameZh : c.name}</span>
                 <span className="b">+{pct(c.boost)}%</span>
@@ -352,9 +359,32 @@ function LevelCard() {
             );
           })}
         </ul>
+        <button className="lv-link" onClick={() => nav.push({ name: 'characters' })}>{t('lvSeeChars')}<Icon name="right" size={16} /></button>
         <p>{t('lvRule')}</p>
       </div>
     </section>
+  );
+}
+
+/** "@username · Lv N" under the address, or a sign-in button. */
+function UserLine() {
+  const { t } = useApp();
+  const { status, me } = useAccountCtx();
+  const [open, setOpen] = useState(false);
+  if (status === 'checking' || status === 'unavailable') return null;
+  return (
+    <span className="me-user">
+      {status === 'in' && me?.username ? (
+        <><b>@{me.username}</b><span className="lvl">LV {levelFor(me.total).lvl}</span></>
+      ) : (
+        <button onClick={() => setOpen(true)}>{status === 'in' ? t('meSetName') : t('meSignIn')}</button>
+      )}
+      {open && (
+        <Sheet title={t('siTitle')} onClose={() => setOpen(false)} closeLabel={t('close')}>
+          <SignInSteps onDone={() => setOpen(false)} />
+        </Sheet>
+      )}
+    </span>
   );
 }
 
@@ -401,7 +431,8 @@ function Settings() {
   const { t, prefs, setPrefs, network, toast } = useApp();
   const { isConnected } = useWallet();
   const { disconnect } = useDisconnect();
-  const [sheet, setSheet] = useState<null | 'lang' | 'net'>(null);
+  const { status, me, signOut } = useAccountCtx();
+  const [sheet, setSheet] = useState<null | 'lang' | 'net' | 'name'>(null);
   const close = () => setSheet(null);
   const Row = ({ label, value, onClick }: { label: string; value?: string; onClick: () => void }) => (
     <button className="set-row" onClick={onClick}>
@@ -416,6 +447,7 @@ function Settings() {
       <div className="group">
         <Row label={t('language')} value={t('langName')} onClick={() => setSheet('lang')} />
         <Row label={t('networkLabel')} value={network.id === 'testnet' ? t('testnetBadge') : 'Mainnet'} onClick={() => setSheet('net')} />
+        {status === 'in' && me?.username && <Row label={t('unLabel')} value={'@' + me.username} onClick={() => setSheet('name')} />}
       </div>
       <h2 className="group-label">{t('secAbout')}</h2>
       <div className="group">
@@ -423,6 +455,7 @@ function Settings() {
           <span style={{ flex: 1 }}>{t('helpDocs')}</span><span className="v" aria-hidden="true">↗</span>
         </a>
         <div className="set-row" style={{ cursor: 'default' }}><span style={{ flex: 1 }}>{t('version')}</span><span className="v">0.2.0</span></div>
+        {status === 'in' && <button className="set-row" onClick={() => { void signOut().then(() => toast(t('signedOut'))); }}><span style={{ flex: 1 }}>{t('signOut')}</span></button>}
         {isConnected && <button className="set-row danger" onClick={() => { disconnect(); toast(t('disconnected')); }}><span style={{ flex: 1 }}>{t('disconnect')}</span></button>}
       </div>
       {sheet === 'lang' && (
@@ -434,6 +467,11 @@ function Settings() {
         </Sheet>
       )}
       {sheet === 'net' && <NetworkSheet onClose={close} />}
+      {sheet === 'name' && me?.username && (
+        <Sheet title={t('unChange')} onClose={close} closeLabel={t('close')}>
+          <UsernameForm initial={me.username} onSaved={close} autoFocus />
+        </Sheet>
+      )}
     </section>
   );
 }

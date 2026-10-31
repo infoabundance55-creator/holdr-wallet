@@ -9,15 +9,19 @@ export function routeToPath(r: Route): string {
     case 'home': return TAB_PATH[r.tab];
     case 'token': return `/token/${r.token}`;
     case 'legacy': return '/me/legacy';
+    case 'characters': return '/characters';
+    case 'play': return '/play';
   }
 }
 
-/** Screen for a URL path. Unknown paths open the home page. */
+/** Screen for a URL path. /characters and /play are the character page and the Moon Jump entry. Unknown paths open the home page. */
 export function pathToRoute(path: string): Route {
   const p = path.replace(/\/+$/, '') || '/';
   const m = /^\/token\/([^/]+)$/.exec(p);
   if (m && ADDR.test(m[1])) return { name: 'token', token: m[1] };
   if (p === '/me/legacy') return { name: 'legacy' };
+  if (p === '/characters') return { name: 'characters' };
+  if (p === '/play') return { name: 'play' };
   for (const [tab, tp] of Object.entries(TAB_PATH) as [Tab, string][]) if (p === tp) return { name: 'home', tab };
   return { name: 'home', tab: 'discover' };
 }

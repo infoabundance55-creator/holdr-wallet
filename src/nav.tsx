@@ -5,7 +5,9 @@ export type Tab = 'discover' | 'create' | 'points' | 'me';
 export type Route =
   | { name: 'home'; tab: Tab }
   | { name: 'token'; token: string }
-  | { name: 'legacy' };
+  | { name: 'legacy' }
+  | { name: 'characters' }
+  | { name: 'play' };
 
 export interface Nav {
   push: (r: Route) => void;

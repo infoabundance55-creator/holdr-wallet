@@ -9,6 +9,9 @@
  * Needs BLOB_READ_WRITE_TOKEN (added by Vercel when the Blob store is connected to the project).
  */
 import { put } from '@vercel/blob';
+import { allowedOrigin } from './_lib/origin.js';
+
+export { allowedOrigin };
 
 export const MAX_BYTES = 1024 * 1024;
 
@@ -22,24 +25,6 @@ export function sniffImage(b: Uint8Array): ImageKind | null {
   if (b.length >= 6 && (at(0, 0x47, 0x49, 0x46, 0x38, 0x37, 0x61) || at(0, 0x47, 0x49, 0x46, 0x38, 0x39, 0x61))) return { mime: 'image/gif', ext: 'gif' };
   if (b.length >= 12 && at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50)) return { mime: 'image/webp', ext: 'webp' };
   return null;
-}
-
-/** Only our own pages may upload: production, the holdrs.xyz domain, this project's previews, and local dev. */
-export function allowedOrigin(origin: string | null): boolean {
-  if (!origin) return false;
-  let u: URL;
-  try {
-    u = new URL(origin);
-  } catch {
-    return false;
-  }
-  if (u.protocol === 'http:') return u.hostname === 'localhost' || u.hostname === '127.0.0.1';
-  if (u.protocol !== 'https:') return false;
-  const h = u.hostname;
-  return (
-    h === 'holdrs.xyz' || h === 'www.holdrs.xyz' || h === 'holdr-wallet.vercel.app' ||
-    /^holdr-wallet-[a-z0-9-]+-infoabundance55-creator\.vercel\.app$/.test(h)
-  );
 }
 
 async function sha256Hex(b: Uint8Array): Promise<string> {
