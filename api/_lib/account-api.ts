@@ -101,6 +101,19 @@ async function auth(req: Request, ctx: Ctx): Promise<{ account: Account; hash: s
   return { account: s.account, hash };
 }
 
+/** The signed-in account for this request (session cookie), or null. Used by other APIs (/api/game). */
+export async function sessionAccount(req: Request, ctx: Ctx): Promise<Account | null> {
+  try {
+    return (await auth(req, ctx)).account;
+  } catch (e) {
+    if (e instanceof HttpError) return null;
+    throw e;
+  }
+}
+
+/** Response headers that clear a stale session cookie, if the request sent one. */
+export const staleCookieHeaders = (req: Request): Record<string, string> => (cookieToken(req) ? { 'set-cookie': clearCookie } : {});
+
 // ---------- actions ----------
 
 async function nonce(req: Request, ctx: Ctx) {

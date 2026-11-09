@@ -146,7 +146,7 @@ export function Discover() {
           <div className="lp-side">
             <Mini title={t('miniPointsT')} text={t('miniPointsS')} img={ART.coin} h={48} pixel />
             <Mini title={t('miniNftT')} text={t('miniNftS')} img={ART.anon} h={72} live onClick={() => nav.push({ name: 'characters' })} />
-            <Mini title={t('miniGameT')} text={t('miniGameS')} img={ART.frog} h={72} onClick={() => nav.push({ name: 'play' })} />
+            <Mini title={t('miniGameT')} text={t('miniGameS')} img={ART.frog} h={72} live onClick={() => nav.push({ name: 'play' })} />
           </div>
         </section>
         {statGrid}
